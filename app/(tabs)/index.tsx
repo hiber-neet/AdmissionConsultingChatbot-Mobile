@@ -1,32 +1,26 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Pressable } from "react-native";
+import { Link } from "expo-router";
 
 export default function HomeScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Home Screen</Text>
-        <Text style={styles.subtitle}>Welcome to your app!</Text>
-      </ScrollView>
-    </SafeAreaView>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={{ fontSize: 24, fontWeight: "700" }}>Home Screen</Text>
+      <Text style={{ marginVertical: 8 }}>Welcome to your app!</Text>
+
+      {/* Nút đi tới Login */}
+      <Link href="/login" asChild>
+        <Pressable
+          style={{
+            backgroundColor: "#FF6A00",
+            paddingVertical: 12,
+            paddingHorizontal: 20,
+            borderRadius: 10,
+            marginTop: 20,
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "600" }}>Đi tới trang Login</Text>
+        </Pressable>
+      </Link>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContent: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-  },
-});
