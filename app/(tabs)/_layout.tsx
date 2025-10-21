@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Settings, User } from 'lucide-react-native';
+import { Home, Settings, User, Bot } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -26,6 +26,18 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chatbot',
+          tabBarIcon: ({ size, color }) => (
+            <Bot size={size} color={color} />
+          ),
+        }}
+      />
+
+
       <Tabs.Screen
         name="settings"
         options={{
