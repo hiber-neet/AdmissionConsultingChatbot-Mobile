@@ -2,9 +2,10 @@ import { useState, useCallback, useEffect } from "react";
 import { View, Text, ActivityIndicator, SafeAreaView } from "react-native";
 import { GiftedChat, IMessage, Message, MessageProps } from "react-native-gifted-chat";
 import { colors } from "../../constants/colors";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../contexts/AuthContext";
 import { chatApi } from "../../services/api";
 import { Link } from "expo-router";
+import Header from '@/components/layout/Header';
 
 export default function ChatScreen() {
   const { user } = useAuth();
@@ -47,13 +48,15 @@ export default function ChatScreen() {
       };
       setMessages((prev) => GiftedChat.append(prev, [botMsg]));
     } catch (e: any) {
+      console.error('Chat error:', e);
+      const errorMsg = e.message || "Lỗi khi gửi tin. Vui lòng kiểm tra kết nối mạng và thử lại.";
       setMessages((prev) =>
         GiftedChat.append(prev, [
           {
             _id: Math.random().toString(),
-            text: "Lỗi khi gửi tin. Vui lòng thử lại.",
+            text: errorMsg,
             createdAt: new Date(),
-            user: { _id: 2, name: "FPT Bot" },
+            user: { _id: 2, name: "FPT Bot", avatar: "https://cdn-icons-png.flaticon.com/512/4712/4712108.png" },
           },
         ])
       );
@@ -63,16 +66,8 @@ export default function ChatScreen() {
   }, [user]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 12 }}>
-        <Text style={{ fontSize: 18, fontWeight: "700", color: colors.primary }}>
-          Chatbot tuyển sinh 🎓
-        </Text>
-
-        <Link href="/" asChild>
-          <Text style={{ color: colors.text, fontSize: 14 }}>🏠 Trang chủ</Text>
-        </Link>
-      </View>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Header title="Chatbot tuyển sinh 🎓" showLogo={false} />
 
       <GiftedChat
         messages={messages}
@@ -111,6 +106,6 @@ export default function ChatScreen() {
           <ActivityIndicator size="small" color={colors.primary} />
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }

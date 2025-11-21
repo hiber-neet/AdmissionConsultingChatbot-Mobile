@@ -1,9 +1,45 @@
 import { View, Text, StyleSheet, ScrollView, Image, Pressable } from 'react-native';
-import { Award, Users, Globe, TrendingUp } from 'lucide-react-native';
-import { Link } from 'expo-router';
+import { Award, Users, Globe, TrendingUp, FileText, Clock, ArrowRight } from 'lucide-react-native';
+import { Link, useRouter } from 'expo-router';
+import Header from '@/components/layout/Header';
 export default function HomeScreen() {
+  const router = useRouter();
+
+  const handleArticlePress = (articleId: number) => {
+    router.push(`/article/${articleId}` as any);
+  };
+
+  const admissionArticles = [
+    {
+      id: 1,
+      title: 'Hướng dẫn đăng ký xét tuyển ĐH FPT 2025',
+      summary: 'Tìm hiểu chi tiết về quy trình đăng ký, hồ sơ cần thiết và lịch trình tuyển sinh năm 2025.',
+      readTime: '5 phút đọc',
+      publishDate: '15 Nov 2025',
+      imageUrl: 'https://images.pexels.com/photos/5428836/pexels-photo-5428836.jpeg?auto=compress&cs=tinysrgb&w=400'
+    },
+    {
+      id: 2,
+      title: 'Điểm chuẩn và học phí các ngành tại ĐH FPT',
+      summary: 'Thông tin mới nhất về điểm chuẩn, học phí và chính sách hỗ trợ tài chính cho sinh viên.',
+      readTime: '7 phút đọc',
+      publishDate: '12 Nov 2025',
+      imageUrl: 'https://images.pexels.com/photos/159775/library-la-trobe-study-students-159775.jpeg?auto=compress&cs=tinysrgb&w=400'
+    },
+    {
+      id: 3,
+      title: 'Kinh nghiệm chuẩn bị hồ sơ xét tuyển',
+      summary: 'Chia sẻ từ những sinh viên đã trúng tuyển về cách chuẩn bị hồ sơ ấn tượng.',
+      readTime: '6 phút đọc',
+      publishDate: '8 Nov 2025',
+      imageUrl: 'https://images.pexels.com/photos/1925536/pexels-photo-1925536.jpeg?auto=compress&cs=tinysrgb&w=400'
+    }
+  ];
+
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      <Header title="Trang chủ" showLogo={true} />
+      <ScrollView style={styles.scrollContent}>
       <View style={styles.header}>
         <Image
           source={{ uri: 'https://images.pexels.com/photos/1595391/pexels-photo-1595391.jpeg?auto=compress&cs=tinysrgb&w=1200' }}
@@ -83,6 +119,45 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📚 Bài viết về Tuyển sinh</Text>
+          <Text style={styles.sectionDescription}>
+            Cập nhật thông tin mới nhất về quy trình tuyển sinh và kinh nghiệm ứng tuyển
+          </Text>
+          
+          {admissionArticles.map((article) => (
+            <Pressable 
+              key={article.id} 
+              style={styles.articleCard}
+              onPress={() => handleArticlePress(article.id)}
+            >
+              <Image source={{ uri: article.imageUrl }} style={styles.articleImage} />
+              <View style={styles.articleContent}>
+                <Text style={styles.articleTitle}>{article.title}</Text>
+                <Text style={styles.articleSummary}>{article.summary}</Text>
+                <View style={styles.articleMeta}>
+                  <View style={styles.articleMetaItem}>
+                    <Clock size={14} color="#666" />
+                    <Text style={styles.articleMetaText}>{article.readTime}</Text>
+                  </View>
+                  <Text style={styles.articleDate}>{article.publishDate}</Text>
+                </View>
+                <View style={styles.readMoreContainer}>
+                  <Text style={styles.readMoreText}>Đọc thêm</Text>
+                  <ArrowRight size={16} color="#FF6600" />
+                </View>
+              </View>
+            </Pressable>
+          ))}
+          
+          <Link href="/articles" asChild>
+            <Pressable style={styles.viewAllArticlesButton}>
+              <Text style={styles.viewAllArticlesText}>Xem tất cả bài viết</Text>
+              <ArrowRight size={18} color="#FF6600" />
+            </Pressable>
+          </Link>
+        </View>
+
         <View style={styles.ctaSection}>
           <Text style={styles.ctaTitle}>Sẵn sàng gia nhập ĐH FPT?</Text>
            <Link href="/admissions" asChild>
@@ -107,6 +182,7 @@ export default function HomeScreen() {
       </View>
       
     </ScrollView>
+    </View>
   );
 }
 
@@ -114,6 +190,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  scrollContent: {
+    flex: 1,
   },
   header: {
     height: 300,
@@ -158,6 +237,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 15,
+  },
+  sectionDescription: {
+    fontSize: 16,
+    color: '#666',
+    lineHeight: 24,
+    marginBottom: 20,
   },
   description: {
     fontSize: 16,
@@ -241,6 +326,85 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FF6600',
+  },
+  articleCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  articleImage: {
+    width: '100%',
+    height: 180,
+    resizeMode: 'cover',
+  },
+  articleContent: {
+    padding: 16,
+  },
+  articleTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+    lineHeight: 24,
+  },
+  articleSummary: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  articleMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  articleMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  articleMetaText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  articleDate: {
+    fontSize: 12,
+    color: '#666',
+  },
+  readMoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 4,
+  },
+  readMoreText: {
+    fontSize: 14,
+    color: '#FF6600',
+    fontWeight: '600',
+  },
+  viewAllArticlesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: '#FF6600',
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 8,
+  },
+  viewAllArticlesText: {
+    fontSize: 16,
+    color: '#FF6600',
+    fontWeight: '600',
   },
 });
 
