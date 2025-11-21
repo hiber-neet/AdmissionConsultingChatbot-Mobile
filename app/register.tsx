@@ -1,19 +1,41 @@
-import { View, Text, TextInput, Pressable } from "react-native";
+import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
 import { useState } from "react";
 import { colors } from "../constants/colors";
-import { Link } from "expo-router";
+import { useAuth } from "../contexts/AuthContext";
+import { Link, router } from "expo-router";
+import { validateEmail, validatePassword } from "../utils/validation";
 
 export default function RegisterScreen() {
+  const { register, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const onRegister = () => {
-    if (password !== confirm) {
-      alert("Mật khẩu nhập lại không trùng!");
+  const onRegister = async () => {
+    setError(null);
+    
+    // Validation
+    if (!validateEmail(email)) {
+      setError("Email không hợp lệ");
       return;
     }
-    alert(`Đăng ký thành công cho ${email}`);
+    if (!validatePassword(password)) {
+      setError("Mật khẩu phải có ít nhất 8 ký tự");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Mật khẩu nhập lại không trùng!");
+      return;
+    }
+    
+    try {
+      await register(email, password);
+      alert("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.");
+      router.replace("/login");
+    } catch (e: any) {
+      setError(e.message || "Đăng ký thất bại");
+    }
   };
 
   return (
@@ -79,17 +101,25 @@ export default function RegisterScreen() {
         onChangeText={setConfirm}
       />
 
+      {error && <Text style={{color : "red" , marginBottom: 8}}>{error}</Text>}
+      
       <Pressable
         onPress={onRegister}
+        disabled={loading}
         style={{
           backgroundColor: colors.primary,
           padding: 14,
           borderRadius: 12,
           alignItems: "center",
           marginBottom: 20,
+          opacity: loading ? 0.7 : 1,
         }}
       >
-        <Text style={{ color: "#fff", fontWeight: "600" }}>Đăng ký</Text>
+        {loading ? (
+          <ActivityIndicator color="#fff"/>
+        ) : (
+          <Text style={{ color: "#fff", fontWeight: "600" }}>Đăng ký</Text>
+        )}
       </Pressable>
 
  
