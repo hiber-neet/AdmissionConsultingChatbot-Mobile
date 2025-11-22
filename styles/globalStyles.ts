@@ -1,11 +1,11 @@
 import { StyleSheet } from 'react-native';
-import { Colors } from '@/constants/colors';
+import { colors } from '@/constants/colors';
 import { Spacing } from '@/constants/spacing';
 
 export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   centerContent: {
     flex: 1,
@@ -29,25 +29,25 @@ export const globalStyles = StyleSheet.create({
   heading1: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: colors.text,
   },
   heading2: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: colors.text,
   },
   heading3: {
     fontSize: 20,
     fontWeight: '600',
-    color: Colors.text,
+    color: colors.text,
   },
   body: {
     fontSize: 16,
-    color: Colors.text,
+    color: colors.text,
   },
   caption: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   padding: {
     padding: Spacing.md,

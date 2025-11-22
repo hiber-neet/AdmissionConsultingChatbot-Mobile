@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Code, Briefcase, Palette, Database, Smartphone, Globe } from 'lucide-react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ProgramCardProps {
   icon: React.ReactNode;
@@ -10,21 +11,23 @@ interface ProgramCardProps {
 }
 
 function ProgramCard({ icon, title, description, duration, career }: ProgramCardProps) {
+  const { colors } = useTheme();
+  
   return (
-    <View style={styles.programCard}>
+    <View style={[styles.programCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.programHeader}>
-        <View style={styles.iconContainer}>{icon}</View>
+        <View style={[styles.iconContainer, { backgroundColor: colors.background }]}>{icon}</View>
         <View style={styles.programHeaderText}>
-          <Text style={styles.programTitle}>{title}</Text>
-          <Text style={styles.programDuration}>{duration}</Text>
+          <Text style={[styles.programTitle, { color: colors.text }]}>{title}</Text>
+          <Text style={[styles.programDuration, { color: colors.textSecondary }]}>{duration}</Text>
         </View>
       </View>
-      <Text style={styles.programDescription}>{description}</Text>
+      <Text style={[styles.programDescription, { color: colors.textSecondary }]}>{description}</Text>
       <View style={styles.careerSection}>
-        <Text style={styles.careerLabel}>Nghề nghiệp:</Text>
-        <Text style={styles.careerText}>{career}</Text>
+        <Text style={[styles.careerLabel, { color: colors.textSecondary }]}>Nghề nghiệp:</Text>
+        <Text style={[styles.careerText, { color: colors.text }]}>{career}</Text>
       </View>
-      <Pressable style={styles.detailButton}>
+      <Pressable style={[styles.detailButton, { backgroundColor: colors.primary }]}>
         <Text style={styles.detailButtonText}>Xem chi tiết</Text>
       </Pressable>
     </View>
@@ -32,18 +35,20 @@ function ProgramCard({ icon, title, description, duration, career }: ProgramCard
 }
 
 export default function ProgramsScreen() {
+  const { colors } = useTheme();
+  
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Các ngành đào tạo</Text>
-        <Text style={styles.headerSubtitle}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.card }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Các ngành đào tạo</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
           Chương trình đào tạo chất lượng cao, kết hợp lý thuyết và thực hành
         </Text>
       </View>
 
       <View style={styles.content}>
         <ProgramCard
-          icon={<Code size={28} color="#FF6600" />}
+          icon={<Code size={28} color={colors.primary} />}
           title="Kỹ thuật phần mềm"
           description="Đào tạo kỹ sư phần mềm chuyên nghiệp, thành thạo các công nghệ lập trình hiện đại như Java, .NET, Python, và các framework phổ biến."
           duration="4 năm"
@@ -51,7 +56,7 @@ export default function ProgramsScreen() {
         />
 
         <ProgramCard
-          icon={<Smartphone size={28} color="#FF6600" />}
+          icon={<Smartphone size={28} color={colors.primary} />}
           title="Thiết kế đồ họa số"
           description="Đào tạo designer sáng tạo với kỹ năng thiết kế UI/UX, motion graphics, và các công cụ Adobe Creative Suite."
           duration="4 năm"
@@ -59,7 +64,7 @@ export default function ProgramsScreen() {
         />
 
         <ProgramCard
-          icon={<Database size={28} color="#FF6600" />}
+          icon={<Database size={28} color={colors.primary} />}
           title="An toàn thông tin"
           description="Chuyên gia bảo mật mạng, phòng chống tấn công mạng, quản trị hệ thống an toàn và ethical hacking."
           duration="4 năm"
@@ -67,7 +72,7 @@ export default function ProgramsScreen() {
         />
 
         <ProgramCard
-          icon={<Briefcase size={28} color="#FF6600" />}
+          icon={<Briefcase size={28} color={colors.primary} />}
           title="Quản trị kinh doanh"
           description="Đào tạo nhà quản lý hiện đại, kết hợp kiến thức kinh doanh truyền thống với công nghệ số và startup."
           duration="4 năm"

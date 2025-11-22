@@ -1,12 +1,13 @@
 import { View, Text, TextInput, Pressable, ActivityIndicator, Alert } from "react-native";
 import { useState, useEffect } from "react";
-import { colors } from "../constants/colors";  
-import { useAuth } from "../contexts/AuthContext";  
+import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { Link, router } from "expo-router";
 import { isSupabaseConfigured } from "../services/supabase";
 
 export default function LoginScreen(){
     const {login, loading} = useAuth();
+    const { colors } = useTheme();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -76,6 +77,7 @@ style={{
 
 <TextInput
     placeholder="Email"
+    placeholderTextColor={colors.textSecondary}
     autoCapitalize="none"
     keyboardType="email-address"
     style={{
@@ -84,6 +86,8 @@ borderColor: colors.border,
 borderRadius: 12,
 padding: 12,
 marginBottom: 20,
+backgroundColor: colors.card,
+color: colors.text,
     }}
     value={email}
     onChangeText={setEmail}
@@ -91,6 +95,7 @@ marginBottom: 20,
 
 <TextInput 
 placeholder="Mật khẩu"
+placeholderTextColor={colors.textSecondary}
 autoCapitalize="none"
 secureTextEntry
 style={{
@@ -99,6 +104,8 @@ borderColor: colors.border,
 borderRadius: 12,
 padding: 12,
 marginBottom: 20,
+backgroundColor: colors.card,
+color: colors.text,
 }}
 value={password}
 onChangeText={setPassword}

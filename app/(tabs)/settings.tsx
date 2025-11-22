@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Switch, Alert } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { Bell, Moon, Globe, HelpCircle, Shield, Info, AlertCircle } from 'lucide-react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/contexts/ThemeContext';
 import { storage } from '@/utils/storage';
 import { isSupabaseConfigured } from '@/services/supabase';
 import * as Linking from 'expo-linking';
@@ -16,16 +16,17 @@ interface SettingItemProps {
   value?: boolean;
   onPress?: () => void;
   onToggle?: (value: boolean) => void;
+  colors: any; // Theme colors
 }
 
-function SettingItem({ icon, title, description, type, value, onPress, onToggle }: SettingItemProps) {
+function SettingItem({ icon, title, description, type, value, onPress, onToggle, colors }: SettingItemProps) {
   return (
-    <Pressable style={styles.settingItem} onPress={onPress}>
+    <Pressable style={[styles.settingItem, { backgroundColor: colors.surface }]} onPress={onPress}>
       <View style={styles.settingContent}>
         <View style={styles.iconContainer}>{icon}</View>
         <View style={styles.textContainer}>
-          <Text style={styles.settingTitle}>{title}</Text>
-          {description && <Text style={styles.settingDescription}>{description}</Text>}
+          <Text style={[styles.settingTitle, { color: colors.text }]}>{title}</Text>
+          {description && <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>{description}</Text>}
         </View>
         {type === 'toggle' && (
           <Switch
@@ -41,8 +42,8 @@ function SettingItem({ icon, title, description, type, value, onPress, onToggle 
 }
 
 export default function SettingsScreen() {
+  const { colors, isDark, toggleTheme } = useTheme();
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -51,13 +52,9 @@ export default function SettingsScreen() {
   const loadSettings = async () => {
     try {
       const savedNotifications = await storage.getItem('notifications');
-      const savedDarkMode = await storage.getItem('darkMode');
       
       if (savedNotifications !== null) {
         setNotifications(JSON.parse(savedNotifications));
-      }
-      if (savedDarkMode !== null) {
-        setDarkMode(JSON.parse(savedDarkMode));
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -67,13 +64,6 @@ export default function SettingsScreen() {
   const handleNotificationToggle = async (value: boolean) => {
     setNotifications(value);
     await storage.setItem('notifications', JSON.stringify(value));
-  };
-
-  const handleDarkModeToggle = async (value: boolean) => {
-    setDarkMode(value);
-    await storage.setItem('darkMode', JSON.stringify(value));
-    // Note: Implementing actual dark mode would require theme context
-    Alert.alert('Thông báo', 'Chế độ tối sẽ được cập nhật trong phiên bản tiếp theo.');
   };
 
   const openWebsite = () => {
@@ -101,16 +91,16 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Cài đặt" showLogo={false} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
         {!isSupabaseConfigured && (
-          <View style={styles.demoWarning}>
+          <View style={[styles.demoWarning, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <AlertCircle size={20} color={colors.warning} />
             <View style={styles.demoWarningText}>
-              <Text style={styles.demoWarningTitle}>Chế độ Demo</Text>
-              <Text style={styles.demoWarningDescription}>
+              <Text style={[styles.demoWarningTitle, { color: colors.text }]}>Chế độ Demo</Text>
+              <Text style={[styles.demoWarningDescription, { color: colors.textSecondary }]}>
                 Supabase chưa được cấu hình. Vui lòng cập nhật file .env
               </Text>
             </View>
@@ -118,7 +108,7 @@ export default function SettingsScreen() {
         )}
         
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thông báo</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Thông báo</Text>
           <SettingItem
             icon={<Bell size={24} color={colors.primary} />}
             title="Thông báo push"
@@ -126,36 +116,32 @@ export default function SettingsScreen() {
             type="toggle"
             value={notifications}
             onToggle={handleNotificationToggle}
+            colors={colors}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Giao diện</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Giao diện</Text>
           <SettingItem
             icon={<Moon size={24} color={colors.primary} />}
             title="Chế độ tối"
             description="Chuyển sang giao diện tối"
             type="toggle"
-            value={darkMode}
-            onToggle={handleDarkModeToggle}
-          />
-          <SettingItem
-            icon={<Globe size={24} color={colors.primary} />}
-            title="Ngôn ngữ"
-            description="Tiếng Việt"
-            type="button"
-            onPress={() => Alert.alert('Thông báo', 'Tính năng này đang được phát triển.')}
+            value={isDark}
+            onToggle={toggleTheme}
+            colors={colors}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Hỗ trợ</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Hỗ trợ</Text>
           <SettingItem
             icon={<Globe size={24} color={colors.primary} />}
             title="Website FPT University"
             description="Truy cập website chính thức"
             type="link"
             onPress={openWebsite}
+            colors={colors}
           />
           <SettingItem
             icon={<HelpCircle size={24} color={colors.primary} />}
@@ -163,17 +149,19 @@ export default function SettingsScreen() {
             description="Liên hệ đội ngũ hỗ trợ"
             type="link"
             onPress={openSupport}
+            colors={colors}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Về ứng dụng</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Về ứng dụng</Text>
           <SettingItem
             icon={<Shield size={24} color={colors.primary} />}
             title="Chính sách bảo mật"
             description="Xem chính sách bảo mật"
             type="button"
             onPress={showPrivacy}
+            colors={colors}
           />
           <SettingItem
             icon={<Info size={24} color={colors.primary} />}
@@ -181,6 +169,7 @@ export default function SettingsScreen() {
             description="Thông tin phiên bản"
             type="button"
             onPress={showAbout}
+            colors={colors}
           />
         </View>
       </ScrollView>
@@ -191,7 +180,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollContent: {
     padding: 20,
@@ -199,7 +187,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors.text,
     marginBottom: 24,
   },
   section: {
@@ -208,11 +195,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
     marginBottom: 12,
   },
   settingItem: {
-    backgroundColor: colors.card,
     borderRadius: 12,
     marginBottom: 8,
   },
@@ -225,7 +210,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -236,18 +220,14 @@ const styles = StyleSheet.create({
   settingTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: colors.text,
   },
   settingDescription: {
     fontSize: 14,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   demoWarning: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3CD',
-    borderColor: colors.warning,
     borderWidth: 1,
     borderRadius: 12,
     padding: 12,
