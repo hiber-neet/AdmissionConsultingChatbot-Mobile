@@ -18,7 +18,7 @@ import {
   Tag,
   Filter,
 } from 'lucide-react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter } from 'expo-router';
 
 interface Article {
@@ -128,6 +128,7 @@ const categories = ['Tất cả', 'Hướng dẫn', 'Thông tin', 'Kinh nghiệm
 
 export default function ArticlesScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [filteredArticles, setFilteredArticles] = useState(allArticles);
@@ -227,17 +228,17 @@ export default function ArticlesScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Bài viết Tuyển sinh" showLogo={false} />
       
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <Search size={20} color="#666" />
+      <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <View style={[styles.searchInputContainer, { backgroundColor: colors.card }]}>
+          <Search size={20} color={colors.textSecondary} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Tìm kiếm bài viết..."
-            placeholderTextColor="#666"
+            placeholderTextColor={colors.textSecondary}
             value={searchText}
             onChangeText={setSearchText}
           />

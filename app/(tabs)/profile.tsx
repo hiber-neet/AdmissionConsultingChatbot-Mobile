@@ -1,13 +1,14 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { User, LogOut, Mail, Calendar } from 'lucide-react-native';
-import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
 import Header from '@/components/layout/Header';
 
 export default function ProfileScreen() {
   const { user, signOut, loading } = useAuth();
+  const { colors } = useTheme();
 
   const handleLogout = () => {
     Alert.alert(
@@ -33,43 +34,43 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title="Hồ sơ cá nhân" showLogo={false} />
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Đang tải...</Text>
+          <Text style={[styles.loadingText, { color: colors.text }]}>Đang tải...</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Hồ sơ cá nhân" showLogo={false} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <View style={styles.avatarContainer}>
-            <User size={40} color={colors.primary} />
+        <View style={[styles.header, { backgroundColor: colors.card }]}>
+          <View style={[styles.avatarContainer, { backgroundColor: colors.primary }]}>
+            <User size={40} color="#fff" />
           </View>
-          <Text style={styles.userName}>
+          <Text style={[styles.userName, { color: colors.text }]}>
             {user?.user_metadata?.full_name || user?.email || 'Người dùng'}
           </Text>
-          <Text style={styles.userEmail}>{user?.email || 'No email'}</Text>
+          <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user?.email || 'No email'}</Text>
         </View>
 
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Thông tin tài khoản</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Thông tin tài khoản</Text>
           
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
+          <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
               <Mail size={20} color={colors.textSecondary} />
-              <Text style={styles.infoLabel}>Email:</Text>
-              <Text style={styles.infoValue}>{user?.email}</Text>
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Email:</Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>{user?.email}</Text>
             </View>
             
-            <View style={styles.infoRow}>
+            <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
               <Calendar size={20} color={colors.textSecondary} />
-              <Text style={styles.infoLabel}>Tham gia:</Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Tham gia:</Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
                 {user?.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : 'Không xác định'}
               </Text>
             </View>
@@ -77,7 +78,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.actionsSection}>
-          <Pressable style={styles.logoutButton} onPress={handleLogout}>
+          <Pressable style={[styles.logoutButton, { backgroundColor: colors.error || '#dc3545' }]} onPress={handleLogout}>
             <LogOut size={20} color="#fff" />
             <Text style={styles.logoutText}>Đăng xuất</Text>
           </Pressable>
@@ -90,7 +91,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollContent: {
     padding: 20,
@@ -102,7 +102,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: colors.textSecondary,
   },
   header: {
     alignItems: 'center',
@@ -112,7 +111,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
@@ -120,12 +118,10 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.text,
     marginBottom: 5,
   },
   userEmail: {
     fontSize: 16,
-    color: colors.textSecondary,
   },
   infoSection: {
     marginBottom: 30,
@@ -133,11 +129,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
     marginBottom: 15,
   },
   infoCard: {
-    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
   },
@@ -146,17 +140,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   infoLabel: {
     fontSize: 16,
-    color: colors.text,
     marginLeft: 12,
     flex: 1,
   },
   infoValue: {
     fontSize: 16,
-    color: colors.textSecondary,
     flex: 2,
     textAlign: 'right',
   },
@@ -164,7 +155,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   logoutButton: {
-    backgroundColor: colors.error,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,12 +1,13 @@
 import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
 import { useState } from "react";
-import { colors } from "../constants/colors";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { Link, router } from "expo-router";
 import { validateEmail, validatePassword } from "../utils/validation";
 
 export default function RegisterScreen() {
   const { register, loading } = useAuth();
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -60,6 +61,7 @@ export default function RegisterScreen() {
 
       <TextInput
         placeholder="Email"
+        placeholderTextColor={colors.textSecondary}
         autoCapitalize="none"
         keyboardType="email-address"
         style={{
@@ -68,6 +70,8 @@ export default function RegisterScreen() {
           borderRadius: 12,
           padding: 12,
           marginBottom: 20,
+          backgroundColor: colors.card,
+          color: colors.text,
         }}
         value={email}
         onChangeText={setEmail}
@@ -75,6 +79,7 @@ export default function RegisterScreen() {
 
       <TextInput
         placeholder="Mật khẩu"
+        placeholderTextColor={colors.textSecondary}
         secureTextEntry
         style={{
           borderWidth: 1,
@@ -82,6 +87,8 @@ export default function RegisterScreen() {
           borderRadius: 12,
           padding: 12,
           marginBottom: 20,
+          backgroundColor: colors.card,
+          color: colors.text,
         }}
         value={password}
         onChangeText={setPassword}
@@ -89,6 +96,7 @@ export default function RegisterScreen() {
 
       <TextInput
         placeholder="Nhập lại mật khẩu"
+        placeholderTextColor={colors.textSecondary}
         secureTextEntry
         style={{
           borderWidth: 1,
@@ -96,6 +104,8 @@ export default function RegisterScreen() {
           borderRadius: 12,
           padding: 12,
           marginBottom: 20,
+          backgroundColor: colors.card,
+          color: colors.text,
         }}
         value={confirm}
         onChangeText={setConfirm}

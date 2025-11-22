@@ -22,7 +22,7 @@ import {
   Smile,
   CheckCheck,
 } from 'lucide-react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Message {
@@ -113,6 +113,7 @@ const initialMessages: Message[] = [
 
 export default function StudentsScreen() {
   const { user } = useAuth();
+  const { colors } = useTheme();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [currentOfficer] = useState(admissionOfficers[0]);
@@ -182,21 +183,21 @@ export default function StudentsScreen() {
         
         <View style={[
           styles.messageBubble,
-          isStudent ? styles.studentBubble : styles.officerBubble
+          isStudent ? [styles.studentBubble, { backgroundColor: colors.primary }] : [styles.officerBubble, { backgroundColor: colors.card, borderColor: colors.border }]
         ]}>
           {!isStudent && (
-            <Text style={styles.senderName}>{item.senderName}</Text>
+            <Text style={[styles.senderName, { color: colors.textSecondary }]}>{item.senderName}</Text>
           )}
           <Text style={[
             styles.messageText,
-            isStudent ? styles.studentText : styles.officerText
+            isStudent ? styles.studentText : { color: colors.text }
           ]}>
             {item.text}
           </Text>
           <View style={styles.messageFooter}>
             <Text style={[
               styles.timestamp,
-              isStudent ? styles.studentTimestamp : styles.officerTimestamp
+              isStudent ? styles.studentTimestamp : { color: colors.textSecondary }
             ]}>
               {item.timestamp.toLocaleTimeString('vi-VN', { 
                 hour: '2-digit', 
@@ -217,7 +218,7 @@ export default function StudentsScreen() {
   };
 
   const renderHeader = () => (
-    <View style={styles.chatHeader}>
+    <View style={[styles.chatHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
       <View style={styles.officerInfo}>
         <View style={styles.avatarContainer}>
           <Image source={{ uri: currentOfficer.avatar }} style={styles.headerAvatar} />
@@ -227,24 +228,24 @@ export default function StudentsScreen() {
           ]} />
         </View>
         <View style={styles.officerDetails}>
-          <Text style={styles.officerName}>{currentOfficer.name}</Text>
+          <Text style={[styles.officerName, { color: colors.text }]}>{currentOfficer.name}</Text>
           <Text style={styles.officerStatus}>
             {currentOfficer.status === 'online' 
               ? 'Đang hoạt động' 
               : `Hoạt động ${currentOfficer.lastSeen?.toLocaleTimeString('vi-VN') || ''}`
             }
           </Text>
-          <Text style={styles.specialization}>{currentOfficer.specialization}</Text>
+          <Text style={[styles.specialization, { color: colors.textSecondary }]}>{currentOfficer.specialization}</Text>
         </View>
       </View>
       <View style={styles.chatActions}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.background }]}>
           <Phone size={20} color={colors.primary} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.background }]}>
           <Video size={20} color={colors.primary} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.background }]}>
           <MoreVertical size={20} color={colors.primary} />
         </TouchableOpacity>
       </View>
@@ -252,7 +253,7 @@ export default function StudentsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Tư vấn Tuyển sinh" showLogo={false} />
       
       {renderHeader()}
@@ -262,7 +263,7 @@ export default function StudentsScreen() {
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
-        style={styles.messagesList}
+        style={[styles.messagesList, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.messagesContent}
         showsVerticalScrollIndicator={false}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
@@ -270,15 +271,15 @@ export default function StudentsScreen() {
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.inputContainer}
+        style={[styles.inputContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}
       >
         <View style={styles.inputWrapper}>
-          <TouchableOpacity style={styles.attachButton}>
+          <TouchableOpacity style={[styles.attachButton, { backgroundColor: colors.background }]}>
             <Paperclip size={20} color={colors.textSecondary} />
           </TouchableOpacity>
           
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
             placeholder="Nhập tin nhắn..."
             placeholderTextColor={colors.textSecondary}
             value={newMessage}
@@ -287,12 +288,12 @@ export default function StudentsScreen() {
             maxLength={1000}
           />
           
-          <TouchableOpacity style={styles.emojiButton}>
+          <TouchableOpacity style={[styles.emojiButton, { backgroundColor: colors.background }]}>
             <Smile size={20} color={colors.textSecondary} />
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.sendButton, newMessage.trim() ? styles.sendButtonActive : null]}
+            style={[styles.sendButton, { backgroundColor: colors.border }, newMessage.trim() ? { backgroundColor: colors.primary } : null]}
             onPress={sendMessage}
             disabled={!newMessage.trim()}
           >
@@ -307,14 +308,11 @@ export default function StudentsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   chatHeader: {
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -350,7 +348,6 @@ const styles = StyleSheet.create({
   officerName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
     marginBottom: 2,
   },
   officerStatus: {
@@ -360,7 +357,6 @@ const styles = StyleSheet.create({
   },
   specialization: {
     fontSize: 11,
-    color: '#6B7280',
   },
   chatActions: {
     flexDirection: 'row',
@@ -370,11 +366,9 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
   },
   messagesList: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
   },
   messagesContent: {
     padding: 16,
@@ -409,20 +403,16 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   studentBubble: {
-    backgroundColor: '#3B82F6',
     borderBottomRightRadius: 6,
     marginLeft: 'auto',
   },
   officerBubble: {
-    backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 6,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   senderName: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#6B7280',
     marginBottom: 4,
   },
   messageText: {
@@ -431,9 +421,6 @@ const styles = StyleSheet.create({
   },
   studentText: {
     color: '#FFFFFF',
-  },
-  officerText: {
-    color: '#111827',
   },
   messageFooter: {
     flexDirection: 'row',
@@ -448,16 +435,11 @@ const styles = StyleSheet.create({
   studentTimestamp: {
     color: 'rgba(255, 255, 255, 0.7)',
   },
-  officerTimestamp: {
-    color: '#6B7280',
-  },
   readIndicator: {
     marginLeft: 4,
   },
   inputContainer: {
-    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -469,32 +451,24 @@ const styles = StyleSheet.create({
   attachButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
   },
   textInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     maxHeight: 100,
-    backgroundColor: '#F9FAFB',
   },
   emojiButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
   },
   sendButton: {
     padding: 12,
     borderRadius: 20,
-    backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  sendButtonActive: {
-    backgroundColor: '#3B82F6',
   },
 });

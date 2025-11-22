@@ -19,7 +19,7 @@ import {
   Heart,
   MessageCircle,
 } from 'lucide-react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Article {
   id: number;
@@ -203,24 +203,25 @@ Liên hệ phòng Tài chính để biết thêm chi tiết!
 export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { colors } = useTheme();
   const articleId = parseInt(id as string);
   
   const article = articlesData.find(a => a.id === articleId);
 
   if (!article) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { backgroundColor: colors.card }]}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <ArrowLeft size={24} color="#333" />
+            <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Bài viết</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Bài viết</Text>
         </View>
         <View style={styles.notFound}>
-          <Text style={styles.notFoundText}>Không tìm thấy bài viết</Text>
+          <Text style={[styles.notFoundText, { color: colors.text }]}>Không tìm thấy bài viết</Text>
         </View>
       </View>
     );
@@ -238,18 +239,18 @@ export default function ArticleDetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <ArrowLeft size={24} color="#333" />
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chi tiết bài viết</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Chi tiết bài viết</Text>
         <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-          <Share2 size={24} color="#FF6600" />
+          <Share2 size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -258,42 +259,42 @@ export default function ArticleDetailScreen() {
         <Image source={{ uri: article.imageUrl }} style={styles.heroImage} />
         
         {/* Article Header */}
-        <View style={styles.articleHeader}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{article.category}</Text>
+        <View style={[styles.articleHeader, { backgroundColor: colors.card }]}>
+          <View style={[styles.categoryBadge, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.categoryText, { color: '#fff' }]}>{article.category}</Text>
           </View>
           
-          <Text style={styles.title}>{article.title}</Text>
-          <Text style={styles.summary}>{article.summary}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{article.title}</Text>
+          <Text style={[styles.summary, { color: colors.textSecondary }]}>{article.summary}</Text>
           
           {/* Meta Information */}
           <View style={styles.metaContainer}>
             <View style={styles.metaItem}>
-              <Calendar size={14} color="#666" />
-              <Text style={styles.metaText}>{article.publishDate}</Text>
+              <Calendar size={14} color={colors.textSecondary} />
+              <Text style={[styles.metaText, { color: colors.textSecondary }]}>{article.publishDate}</Text>
             </View>
             <View style={styles.metaItem}>
-              <Clock size={14} color="#666" />
-              <Text style={styles.metaText}>{article.readTime}</Text>
+              <Clock size={14} color={colors.textSecondary} />
+              <Text style={[styles.metaText, { color: colors.textSecondary }]}>{article.readTime}</Text>
             </View>
             <View style={styles.metaItem}>
-              <Text style={styles.metaText}>{article.views} lượt xem</Text>
+              <Text style={[styles.metaText, { color: colors.textSecondary }]}>{article.views} lượt xem</Text>
             </View>
           </View>
 
           <View style={styles.authorContainer}>
-            <Text style={styles.authorText}>Bởi {article.author}</Text>
+            <Text style={[styles.authorText, { color: colors.textSecondary }]}>Bởi {article.author}</Text>
           </View>
         </View>
 
         {/* Article Content */}
-        <View style={styles.articleContent}>
-          <Text style={styles.contentText}>{article.content}</Text>
+        <View style={[styles.articleContent, { backgroundColor: colors.card }]}>
+          <Text style={[styles.contentText, { color: colors.text }]}>{article.content}</Text>
         </View>
 
         {/* Tags */}
-        <View style={styles.tagsContainer}>
-          <Text style={styles.tagsTitle}>Thẻ liên quan:</Text>
+        <View style={[styles.tagsContainer, { backgroundColor: colors.card }]}>
+          <Text style={[styles.tagsTitle, { color: colors.text }]}>Thẻ liên quan:</Text>
           <View style={styles.tagsRow}>
             {article.tags.map((tag, index) => (
               <View key={index} style={styles.tag}>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Menu, GraduationCap } from 'lucide-react-native';
+import { useTheme } from '@/contexts/ThemeContext';
 import Sidebar from './Sidebar';
 
 interface HeaderProps {
@@ -9,6 +10,7 @@ interface HeaderProps {
 }
 
 export default function Header({ title = "FPT University", showLogo = true }: HeaderProps) {
+  const { colors } = useTheme();
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
   const openSidebar = () => {
@@ -21,18 +23,18 @@ export default function Header({ title = "FPT University", showLogo = true }: He
 
   return (
     <>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.menuButton} onPress={openSidebar}>
-          <Menu size={24} color="#1F2937" />
+          <Menu size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.titleContainer}>
           {showLogo && (
             <View style={styles.logo}>
-              <GraduationCap size={20} color="#3B82F6" />
+              <GraduationCap size={20} color={colors.primary} />
             </View>
           )}
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         </View>
 
         <View style={styles.rightSpace} />

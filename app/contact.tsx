@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { MapPin, Phone, Mail, Facebook, Globe, MessageCircle } from 'lucide-react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ContactCardProps {
   icon: React.ReactNode;
@@ -9,12 +10,14 @@ interface ContactCardProps {
 }
 
 function ContactCard({ icon, title, content, action }: ContactCardProps) {
+  const { colors } = useTheme();
+  
   return (
-    <Pressable style={styles.contactCard} onPress={action}>
-      <View style={styles.iconCircle}>{icon}</View>
+    <Pressable style={[styles.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={action}>
+      <View style={[styles.iconCircle, { backgroundColor: colors.background }]}>{icon}</View>
       <View style={styles.contactContent}>
-        <Text style={styles.contactTitle}>{title}</Text>
-        <Text style={styles.contactText}>{content}</Text>
+        <Text style={[styles.contactTitle, { color: colors.text }]}>{title}</Text>
+        <Text style={[styles.contactText, { color: colors.textSecondary }]}>{content}</Text>
       </View>
     </Pressable>
   );
@@ -27,22 +30,25 @@ interface CampusCardProps {
 }
 
 function CampusCard({ name, address, phone }: CampusCardProps) {
+  const { colors } = useTheme();
+  
   return (
-    <View style={styles.campusCard}>
-      <Text style={styles.campusName}>{name}</Text>
+    <View style={[styles.campusCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <Text style={[styles.campusName, { color: colors.text }]}>{name}</Text>
       <View style={styles.campusInfo}>
-        <MapPin size={16} color="#666" />
-        <Text style={styles.campusAddress}>{address}</Text>
+        <MapPin size={16} color={colors.textSecondary} />
+        <Text style={[styles.campusAddress, { color: colors.textSecondary }]}>{address}</Text>
       </View>
       <View style={styles.campusInfo}>
-        <Phone size={16} color="#666" />
-        <Text style={styles.campusPhone}>{phone}</Text>
+        <Phone size={16} color={colors.textSecondary} />
+        <Text style={[styles.campusPhone, { color: colors.textSecondary }]}>{phone}</Text>
       </View>
     </View>
   );
 }
 
 export default function ContactScreen() {
+  const { colors } = useTheme();
   const handleCall = (phone: string) => {
     Linking.openURL(`tel:${phone}`);
   };
@@ -56,41 +62,41 @@ export default function ContactScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Liên hệ</Text>
-        <Text style={styles.headerSubtitle}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.card }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Liên hệ</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
           Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn cho bạn
         </Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thông tin liên hệ</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Thông tin liên hệ</Text>
 
           <ContactCard
-            icon={<Phone size={24} color="#FF6600" />}
+            icon={<Phone size={24} color={colors.primary} />}
             title="Hotline tư vấn"
             content="1900 636939"
             action={() => handleCall('1900636939')}
           />
 
           <ContactCard
-            icon={<Mail size={24} color="#FF6600" />}
+            icon={<Mail size={24} color={colors.primary} />}
             title="Email"
             content="tuyen.sinh@fpt.edu.vn"
             action={() => handleEmail('tuyen.sinh@fpt.edu.vn')}
           />
 
           <ContactCard
-            icon={<Globe size={24} color="#FF6600" />}
+            icon={<Globe size={24} color={colors.primary} />}
             title="Website"
             content="https://daihoc.fpt.edu.vn"
             action={() => handleWebsite('https://daihoc.fpt.edu.vn')}
           />
 
           <ContactCard
-            icon={<MessageCircle size={24} color="#FF6600" />}
+            icon={<MessageCircle size={24} color={colors.primary} />}
             title="Chat trực tuyến"
             content="Hỗ trợ 24/7"
           />

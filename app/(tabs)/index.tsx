@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, Image, Pressable } from 'react-native';
 import { Award, Users, Globe, TrendingUp, FileText, Clock, ArrowRight } from 'lucide-react-native';
 import { Link, useRouter } from 'expo-router';
+import { useTheme } from '@/contexts/ThemeContext';
 import Header from '@/components/layout/Header';
 export default function HomeScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const handleArticlePress = (articleId: number) => {
     router.push(`/article/${articleId}` as any);
@@ -37,7 +39,7 @@ export default function HomeScreen() {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Trang chủ" showLogo={true} />
       <ScrollView style={styles.scrollContent}>
       <View style={styles.header}>
@@ -53,8 +55,8 @@ export default function HomeScreen() {
 
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Chào mừng đến với ĐH FPT</Text>
-          <Text style={styles.description}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Chào mừng đến với ĐH FPT</Text>
+          <Text style={[styles.description, { color: colors.textSecondary }]}>
             Đại học FPT là trường đại học tư thân đầu tiên ở Việt Nam do Tập đoàn FPT thành lập,
             với sứ mệnh đào tạo nguồn nhân lực chất lượng cao trong lĩnh vực công nghệ thông tin
             và kinh doanh.
@@ -160,11 +162,11 @@ export default function HomeScreen() {
 
         <View style={styles.ctaSection}>
           <Text style={styles.ctaTitle}>Sẵn sàng gia nhập ĐH FPT?</Text>
-           <Link href="/admissions" asChild>
-    <Pressable style={styles.ctaButton}>
-      <Text style={styles.ctaButtonText}>Đăng ký tư xét tuyển ngay !</Text>
-    </Pressable>
-  </Link>
+          <Link href="/admissions" asChild>
+            <Pressable style={styles.ctaButton}>
+              <Text style={styles.ctaButtonText}>Đăng ký xét tuyển ngay!</Text>
+            </Pressable>
+          </Link>
         </View>
          <Link href="/login" asChild>
         <Pressable
@@ -308,6 +310,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 40,
+    minHeight: 120,
   },
   ctaTitle: {
     fontSize: 22,
@@ -315,17 +318,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
+    lineHeight: 28,
   },
   ctaButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     paddingHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 25,
+    minWidth: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#ffffff',
   },
   ctaButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FF6600',
+    textAlign: 'center',
   },
   articleCard: {
     backgroundColor: '#fff',

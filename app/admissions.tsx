@@ -1,31 +1,34 @@
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { CheckCircle, Calendar, FileText, Award } from 'lucide-react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function AdmissionsScreen() {
+  const { colors } = useTheme();
+  
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Tuyển sinh 2025</Text>
-        <Text style={styles.headerSubtitle}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.card }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Tuyển sinh 2025</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
           Thông tin chi tiết về quy trình xét tuyển và hồ sơ đăng ký
         </Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Phương thức xét tuyển</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Phương thức xét tuyển</Text>
 
-          <View style={styles.methodCard}>
+          <View style={[styles.methodCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.methodHeader}>
-              <Award size={24} color="#FF6600" />
-              <Text style={styles.methodTitle}>Xét tuyển học bạ</Text>
+              <Award size={24} color={colors.primary} />
+              <Text style={[styles.methodTitle, { color: colors.text }]}>Xét tuyển học bạ</Text>
             </View>
-            <Text style={styles.methodDescription}>
+            <Text style={[styles.methodDescription, { color: colors.textSecondary }]}>
               Xét điểm trung bình các môn trong học bạ THPT (lớp 10, 11, 12)
             </Text>
-            <View style={styles.requirementBox}>
-              <Text style={styles.requirementLabel}>Điểm tối thiểu:</Text>
-              <Text style={styles.requirementValue}>18.0/30 điểm (3 môn)</Text>
+            <View style={[styles.requirementBox, { backgroundColor: colors.background }]}>
+              <Text style={[styles.requirementLabel, { color: colors.textSecondary }]}>Điểm tối thiểu:</Text>
+              <Text style={[styles.requirementValue, { color: colors.primary }]}>18.0/30 điểm (3 môn)</Text>
             </View>
           </View>
 

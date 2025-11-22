@@ -29,6 +29,7 @@ import {
 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface SidebarProps {
   isVisible: boolean;
@@ -116,6 +117,7 @@ const menuItems: MenuItem[] = [
 
 export default function Sidebar({ isVisible, onClose }: SidebarProps) {
   const { user } = useAuth();
+  const { colors } = useTheme();
   const isAuthenticated = !!user;
 
   const handleNavigate = (route: string) => {
@@ -136,37 +138,37 @@ export default function Sidebar({ isVisible, onClose }: SidebarProps) {
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.sidebar}>
+        <View style={[styles.sidebar, { backgroundColor: colors.surface }]}>
           <SafeAreaView style={styles.sidebarContent}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
               <View style={styles.headerLeft}>
-                <View style={styles.logoContainer}>
+                <View style={[styles.logoContainer, { backgroundColor: colors.primary }]}>
                   <GraduationCap size={24} color="white" />
                 </View>
                 <View style={styles.headerText}>
-                  <Text style={styles.appName}>FPT University</Text>
-                  <Text style={styles.appTagline}>Admission Portal</Text>
+                  <Text style={[styles.appName, { color: colors.text }]}>FPT University</Text>
+                  <Text style={[styles.appTagline, { color: colors.textSecondary }]}>Admission Portal</Text>
                 </View>
               </View>
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <X size={20} color="#6B7280" />
+                <X size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             {/* User Info */}
             {isAuthenticated && user && (
-              <View style={styles.userInfo}>
-                <View style={styles.userAvatar}>
+              <View style={[styles.userInfo, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+                <View style={[styles.userAvatar, { backgroundColor: colors.primary }]}>
                   <Text style={styles.userAvatarText}>
                     {user.email?.charAt(0).toUpperCase() || 'U'}
                   </Text>
                 </View>
                 <View style={styles.userDetails}>
-                  <Text style={styles.userName}>
+                  <Text style={[styles.userName, { color: colors.text }]}>
                     {user.email || 'Người dùng'}
                   </Text>
-                  <Text style={styles.userRole}>
+                  <Text style={[styles.userRole, { color: colors.textSecondary }]}>
                     {user.role === 'admin' ? 'Quản trị viên' : 'Sinh viên'}
                   </Text>
                 </View>
@@ -175,7 +177,7 @@ export default function Sidebar({ isVisible, onClose }: SidebarProps) {
 
             {/* Menu Items */}
             <ScrollView style={styles.menuContainer}>
-              <Text style={styles.sectionTitle}>ĐIỀU HƯỚNG</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>ĐIỀU HƯỚNG</Text>
               {filteredMenuItems.map((item, index) => {
                 const IconComponent = item.icon;
                 return (
@@ -185,11 +187,11 @@ export default function Sidebar({ isVisible, onClose }: SidebarProps) {
                     onPress={() => handleNavigate(item.route)}
                   >
                     <View style={styles.menuItemIcon}>
-                      <IconComponent size={20} color="#3B82F6" />
+                      <IconComponent size={20} color={colors.primary} />
                     </View>
                     <View style={styles.menuItemContent}>
-                      <Text style={styles.menuItemTitle}>{item.title}</Text>
-                      <Text style={styles.menuItemDescription}>{item.description}</Text>
+                      <Text style={[styles.menuItemTitle, { color: colors.text }]}>{item.title}</Text>
+                      <Text style={[styles.menuItemDescription, { color: colors.textSecondary }]}>{item.description}</Text>
                     </View>
                   </TouchableOpacity>
                 );
@@ -197,9 +199,9 @@ export default function Sidebar({ isVisible, onClose }: SidebarProps) {
             </ScrollView>
 
             {/* Footer */}
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>© 2024 FPT University</Text>
-              <Text style={styles.footerSubText}>Version 1.0.0</Text>
+            <View style={[styles.footer, { borderTopColor: colors.border }]}>
+              <Text style={[styles.footerText, { color: colors.textSecondary }]}>© 2024 FPT University</Text>
+              <Text style={[styles.footerSubText, { color: colors.textSecondary }]}>Version 1.0.0</Text>
             </View>
           </SafeAreaView>
         </View>
