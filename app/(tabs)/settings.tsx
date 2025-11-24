@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
-import { Bell, Moon, Globe, HelpCircle, Shield, Info, AlertCircle } from 'lucide-react-native';
+import { Bell, Moon, Globe, HelpCircle, Shield, Info, AlertCircle, LogOut } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { storage } from '@/utils/storage';
 import { isSupabaseConfigured } from '@/services/supabase';
 import * as Linking from 'expo-linking';
@@ -43,6 +44,7 @@ function SettingItem({ icon, title, description, type, value, onPress, onToggle,
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
+  const { signOut } = useAuth();
   const [notifications, setNotifications] = useState(true);
 
   useEffect(() => {
@@ -87,6 +89,28 @@ export default function SettingsScreen() {
       'Chính sách bảo mật',
       'Thông tin cá nhân của bạn được bảo mật theo tiêu chuẩn của FPT University. Chúng tôi chỉ sử dụng thông tin để tư vấn tuyển sinh.',
       [{ text: 'Đóng', style: 'default' }]
+    );
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Đăng xuất',
+      'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        { 
+          text: 'Đăng xuất', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut();
+              Alert.alert('Thông báo', 'Đăng xuất thành công!');
+            } catch (error) {
+              Alert.alert('Lỗi', 'Có lỗi xảy ra khi đăng xuất');
+            }
+          }
+        }
+      ]
     );
   };
 
@@ -169,6 +193,18 @@ export default function SettingsScreen() {
             description="Thông tin phiên bản"
             type="button"
             onPress={showAbout}
+            colors={colors}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Tài khoản</Text>
+          <SettingItem
+            icon={<LogOut size={24} color="#E53E3E" />}
+            title="Đăng xuất"
+            description="Đăng xuất khỏi ứng dụng"
+            type="button"
+            onPress={handleLogout}
             colors={colors}
           />
         </View>

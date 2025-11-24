@@ -131,7 +131,7 @@ style ={{
 <Link href="/register" asChild>
   <Pressable style={{ marginTop: 20 }}>
     <Text style={{ color: colors.text, textAlign: "center" }}>
-      Chưa có tài khoản? Đăng ký ngay
+      Chưa có tài khoản? <Text style={{ fontWeight: "bold", color: colors.primary }}>Đăng ký ngay</Text>
     </Text>
   </Pressable>
 </Link>
