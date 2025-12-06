@@ -1,24 +1,36 @@
-import { useEffect } from 'react';
-import { useRouter, useSegments } from 'expo-router';
-import { useAuth } from '@/contexts/AuthContext';
+// hooks/useProtectedRoute.ts
+import { useEffect } from "react";
+import {
+  useRouter,
+  useSegments,
+  useRootNavigationState,
+} from "expo-router";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useProtectedRoute() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
 
   useEffect(() => {
-    if (loading) return;
+    // ❗ Quan trọng: chưa sẵn sàng thì KHÔNG navigate
+    if (loading || !rootNavigationState?.key) return;
 
-    const inAuthGroup = segments[0] === '(tabs)';
-    const inAuthPages = segments[0] === 'login' || segments[0] === 'register';
+    const first = segments[0];
+    const inProtectedGroup = first === "(tabs)";
+    const inAuthPages = first === "login" || first === "register";
 
-    if (!user && inAuthGroup) {
-      // User is not signed in and trying to access protected route
-      router.replace('/login');
-    } else if (user && inAuthPages) {
-      // User is signed in and trying to access auth pages
-      router.replace('/(tabs)');
+    // Chưa login mà đang vào vùng cần bảo vệ -> đá về login
+    if (!user && inProtectedGroup) {
+      router.replace("/login");
+      return;
     }
-  }, [user, segments, loading]);
+
+    // Đã login mà vẫn ở login/register -> đưa về tabs
+    if (user && inAuthPages) {
+      router.replace("/(tabs)");
+      return;
+    }
+  }, [user, loading, segments, rootNavigationState?.key]);
 }

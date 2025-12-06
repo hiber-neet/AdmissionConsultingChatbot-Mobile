@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Code, Briefcase, Palette, Database, Smartphone, Globe } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -8,27 +9,86 @@ interface ProgramCardProps {
   description: string;
   duration: string;
   career: string;
+  detail: string;         
 }
 
-function ProgramCard({ icon, title, description, duration, career }: ProgramCardProps) {
+function ProgramCard({
+  icon,
+  title,
+  description,
+  duration,
+  career,
+  detail,
+}: ProgramCardProps) {
   const { colors } = useTheme();
-  
+  const [expanded, setExpanded] = useState(false);
+
   return (
-    <View style={[styles.programCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <View
+      style={[
+        styles.programCard,
+        { backgroundColor: colors.card, borderColor: colors.border },
+      ]}
+    >
       <View style={styles.programHeader}>
-        <View style={[styles.iconContainer, { backgroundColor: colors.background }]}>{icon}</View>
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: colors.background },
+          ]}
+        >
+          {icon}
+        </View>
         <View style={styles.programHeaderText}>
-          <Text style={[styles.programTitle, { color: colors.text }]}>{title}</Text>
-          <Text style={[styles.programDuration, { color: colors.textSecondary }]}>{duration}</Text>
+          <Text style={[styles.programTitle, { color: colors.text }]}>
+            {title}
+          </Text>
+          <Text
+            style={[styles.programDuration, { color: colors.textSecondary }]}
+          >
+            {duration}
+          </Text>
         </View>
       </View>
-      <Text style={[styles.programDescription, { color: colors.textSecondary }]}>{description}</Text>
+
+      <Text
+        style={[styles.programDescription, { color: colors.textSecondary }]}
+      >
+        {description}
+      </Text>
+
       <View style={styles.careerSection}>
-        <Text style={[styles.careerLabel, { color: colors.textSecondary }]}>Nghề nghiệp:</Text>
-        <Text style={[styles.careerText, { color: colors.text }]}>{career}</Text>
+        <Text
+          style={[styles.careerLabel, { color: colors.textSecondary }]}
+        >
+          Nghề nghiệp:
+        </Text>
+        <Text style={[styles.careerText, { color: colors.text }]}>
+          {career}
+        </Text>
       </View>
-      <Pressable style={[styles.detailButton, { backgroundColor: colors.primary }]}>
-        <Text style={styles.detailButtonText}>Xem chi tiết</Text>
+
+   
+      {expanded && (
+        <View
+          style={[
+            styles.detailBox,
+            { backgroundColor: colors.background },
+          ]}
+        >
+          <Text style={[styles.detailText, { color: colors.text }]}>
+            {detail}
+          </Text>
+        </View>
+      )}
+
+      <Pressable
+        style={[styles.detailButton, { backgroundColor: colors.primary }]}
+        onPress={() => setExpanded(prev => !prev)}
+      >
+        <Text style={styles.detailButtonText}>
+          {expanded ? 'Thu gọn' : 'Xem chi tiết'}
+        </Text>
       </Pressable>
     </View>
   );
@@ -36,12 +96,18 @@ function ProgramCard({ icon, title, description, duration, career }: ProgramCard
 
 export default function ProgramsScreen() {
   const { colors } = useTheme();
-  
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={[styles.header, { backgroundColor: colors.card }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Các ngành đào tạo</Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Các ngành đào tạo
+        </Text>
+        <Text
+          style={[styles.headerSubtitle, { color: colors.textSecondary }]}
+        >
           Chương trình đào tạo chất lượng cao, kết hợp lý thuyết và thực hành
         </Text>
       </View>
@@ -53,6 +119,7 @@ export default function ProgramsScreen() {
           description="Đào tạo kỹ sư phần mềm chuyên nghiệp, thành thạo các công nghệ lập trình hiện đại như Java, .NET, Python, và các framework phổ biến."
           duration="4 năm"
           career="Software Engineer, Full-stack Developer, DevOps Engineer, Solution Architect"
+          detail="Sinh viên được học từ cấu trúc dữ liệu – giải thuật, lập trình hướng đối tượng, đến thiết kế hệ thống, DevOps và điện toán đám mây. Chương trình chú trọng làm dự án thật với doanh nghiệp, quy trình Agile/Scrum và kỹ năng làm việc nhóm, giúp bạn sẵn sàng trở thành lập trình viên full-stack sau khi tốt nghiệp."
         />
 
         <ProgramCard
@@ -61,6 +128,7 @@ export default function ProgramsScreen() {
           description="Đào tạo designer sáng tạo với kỹ năng thiết kế UI/UX, motion graphics, và các công cụ Adobe Creative Suite."
           duration="4 năm"
           career="UI/UX Designer, Graphic Designer, Motion Designer, Art Director"
+          detail="Bạn sẽ được rèn luyện tư duy thẩm mỹ, bố cục, màu sắc, typo và trải nghiệm người dùng. Sinh viên làm việc nhiều với Figma, Adobe Photoshop, Illustrator, After Effects… để xây dựng portfolio cá nhân gồm logo, bộ nhận diện, UI app/web và motion video – là lợi thế lớn khi ứng tuyển agency hoặc product company."
         />
 
         <ProgramCard
@@ -69,6 +137,7 @@ export default function ProgramsScreen() {
           description="Chuyên gia bảo mật mạng, phòng chống tấn công mạng, quản trị hệ thống an toàn và ethical hacking."
           duration="4 năm"
           career="Security Engineer, Penetration Tester, Security Analyst, SOC Analyst"
+          detail="Chương trình tập trung vào hệ điều hành, mạng máy tính, mã hóa dữ liệu, kỹ thuật tấn công – phòng thủ, giám sát và ứng phó sự cố. Sinh viên được thực hành trên các lab mô phỏng tấn công, CTF, và các công cụ như Wireshark, Kali Linux, SIEM… để hiểu cách bảo vệ hệ thống trong môi trường doanh nghiệp thực tế."
         />
 
         <ProgramCard
@@ -77,6 +146,7 @@ export default function ProgramsScreen() {
           description="Đào tạo nhà quản lý hiện đại, kết hợp kiến thức kinh doanh truyền thống với công nghệ số và startup."
           duration="4 năm"
           career="Business Analyst, Project Manager, Product Manager, Entrepreneur"
+          detail="Sinh viên được học quản trị, marketing, tài chính, nhân sự cùng kỹ năng phân tích dữ liệu, lập kế hoạch kinh doanh và quản lý dự án. Trong quá trình học có nhiều đồ án mô phỏng doanh nghiệp thật, pitching ý tưởng khởi nghiệp và làm việc trực tiếp với mentor từ doanh nghiệp."
         />
 
         <ProgramCard
@@ -85,6 +155,7 @@ export default function ProgramsScreen() {
           description="Chuyên gia marketing số, SEO/SEM, Social Media Marketing, Content Marketing và phân tích dữ liệu khách hàng."
           duration="4 năm"
           career="Digital Marketing Manager, SEO Specialist, Social Media Manager, Growth Hacker"
+          detail="Bạn được học cách xây dựng chiến dịch trên Facebook, TikTok, Google, SEO/SEM, email marketing và đo lường bằng các công cụ analytics. Sinh viên thường xuyên làm project thực tế: nghiên cứu khách hàng, lập kế hoạch nội dung, chạy thử quảng cáo và đọc số liệu để tối ưu hiệu quả."
         />
 
         <ProgramCard
@@ -93,14 +164,14 @@ export default function ProgramsScreen() {
           description="Đào tạo game designer và developer với kỹ năng Unity, Unreal Engine, 3D modeling và game mechanics."
           duration="4 năm"
           career="Game Designer, Game Developer, 3D Artist, Level Designer"
+          detail="Chương trình bao gồm xây dựng cốt truyện, thiết kế gameplay, hệ thống nhiệm vụ, lập trình trong Unity/Unreal và thiết kế nhân vật – bối cảnh 3D. Sinh viên sẽ làm nhiều prototype và demo game, qua đó hiểu quy trình sản xuất game từ ý tưởng đến sản phẩm có thể chơi được."
         />
 
         <View style={styles.infoBox}>
           <Text style={styles.infoTitle}>Học phí & Học bổng</Text>
           <Text style={styles.infoText}>
-            • Học phí: 22 - 27 triệu đồng/kỳ{'\n'}
-            • Học bổng: Lên đến 100% học phí cho thí sinh xuất sắc{'\n'}
-            • Hỗ trợ vay vốn: Lãi suất ưu đãi cho sinh viên
+             Học phí: 22 - 27 triệu đồng/kỳ{'\n'}
+             Học bổng: Lên đến 100% học phí cho thí sinh xuất sắc{'\n'}
           </Text>
         </View>
       </View>
@@ -193,6 +264,15 @@ const styles = StyleSheet.create({
   careerText: {
     fontSize: 14,
     color: '#666',
+    lineHeight: 20,
+  },
+  detailBox: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  detailText: {
+    fontSize: 14,
     lineHeight: 20,
   },
   detailButton: {

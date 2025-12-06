@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { Link, router } from "expo-router";
 import { validateEmail, validatePassword } from "../utils/validation";
-import { isSupabaseConfigured } from "../services/supabase";
+import { Picker } from "@react-native-picker/picker";
 
 export default function RegisterScreen() {
   const { register, loading } = useAuth();
@@ -15,6 +15,9 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  const [major, setMajor] = useState<string>("");         
+  const [region, setRegion] = useState<string>("");
 
   const onRegister = async () => {
     setError(null);
@@ -59,7 +62,14 @@ export default function RegisterScreen() {
     }
     
     try {
-      await register(email, password);
+      await register({
+        fullName,
+        email,
+        phone: phoneNumber,
+        interest_desired_major: major, 
+        interest_region:"", 
+        password,
+    });
       Alert.alert(
         "Đăng ký thành công!",
         "Tài khoản của bạn đã được tạo thành công.",
@@ -104,23 +114,6 @@ export default function RegisterScreen() {
       >
         Tạo tài khoản để bắt đầu tư vấn tuyển sinh
       </Text>
-
-      {!isSupabaseConfigured && (
-        <View style={{
-          backgroundColor: colors.card,
-          padding: 12,
-          borderRadius: 8,
-          marginBottom: 20,
-          borderLeftWidth: 4,
-          borderLeftColor: colors.primary,
-        }}>
-          <Text style={{ fontSize: 14, color: colors.text, fontWeight: '600' }}>Chế độ Demo:</Text>
-          <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>
-            Đăng ký trong chế độ demo
-          </Text>
-        </View>
-      )}
-
       <TextInput
         placeholder="Họ và tên"
         placeholderTextColor={colors.textSecondary}
@@ -172,6 +165,31 @@ export default function RegisterScreen() {
         value={phoneNumber}
         onChangeText={setPhoneNumber}
       />
+
+ <View
+        style={{
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 12,
+          marginBottom: 20,
+          overflow: "hidden",
+          backgroundColor: colors.card,
+        }}
+      >
+        <Picker
+          selectedValue={major}
+          onValueChange={(value) => setMajor(value)}
+          style={{ color: colors.text }}
+        >
+          <Picker.Item label="Chọn ngành học" value="" />
+          <Picker.Item label="Kỹ thuật phần mềm" value="software" />
+          <Picker.Item label="Thiết kế đồ họa" value="design" />
+          <Picker.Item label="Trí tuệ nhân tạo" value="ai" />
+          <Picker.Item label="An ninh mạng" value="security" />
+          <Picker.Item label="Kinh doanh số" value="business" />
+          <Picker.Item label="Thiết kế trò chơi" value="game" />
+        </Picker>
+      </View>
 
       <TextInput
         placeholder="Mật khẩu"

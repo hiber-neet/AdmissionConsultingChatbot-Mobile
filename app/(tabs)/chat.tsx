@@ -1,12 +1,18 @@
-import { useState, useCallback, useEffect } from "react";
-import { View, Text, ActivityIndicator, SafeAreaView, TextInput, TouchableOpacity, Platform, KeyboardAvoidingView } from "react-native";
-import { GiftedChat, IMessage, Message, MessageProps } from "react-native-gifted-chat";
+import { useState, useCallback, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  TextInput,
+  TouchableOpacity,
+  Platform,
+  KeyboardAvoidingView,
+} from "react-native";
+import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
-import { chatApi } from "../../services/api";
-import { Link } from "expo-router";
-import Header from '@/components/layout/Header';
-import { Send, Paperclip, Smile } from 'lucide-react-native';
+import Header from "@/components/layout/Header";
+import { Send, Paperclip, Smile } from "lucide-react-native";
 
 export default function ChatScreen() {
   const { user } = useAuth();
@@ -14,8 +20,94 @@ export default function ChatScreen() {
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const [connected, setConnected] = useState(false);
 
+  const wsRef = useRef<WebSocket | null>(null);
+  const botBufferRef = useRef<string>("");
+
+  // URL WebSocket (android emulator dùng 10.0.2.2)
+  const WS_BASE = Platform.select({
+    web: "ws://localhost:8000",
+    ios: "ws://localhost:8000",
+    android: "ws://10.0.2.2:8000",
+  });
+  const WS_URL = `${WS_BASE}/chat/ws/chat`;
+
+  // Kết nối WebSocket
+  useEffect(() => {
+    const ws = new WebSocket(WS_URL);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("WS connected");
+      setConnected(true);
+
+ 
+     const userId = user?.user_id;  
+ws.send(JSON.stringify({
+  user_id: userId,
+  session_id: sessionId,
+}));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.event === "session_created") {
+          setSessionId(data.session_id);
+          console.log("Session created:", data.session_id);
+          return;
+        }
+
+        if (data.event === "chunk") {
+          // ghép text lại, chỉ show khi done
+          botBufferRef.current += data.content;
+          return;
+        }
+
+        if (data.event === "done") {
+          const fullText = botBufferRef.current.trim();
+          if (fullText) {
+            const botMsg: IMessage = {
+              _id: Math.random().toString(),
+              text: fullText,
+              createdAt: new Date(),
+              user: {
+                _id: 2,
+                name: "FPT Bot",
+                avatar:
+                  "https://cdn-icons-png.flaticon.com/512/4712/4712108.png",
+              },
+            };
+            setMessages((prev) => GiftedChat.append(prev, [botMsg]));
+          }
+          botBufferRef.current = "";
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.log("WS message parse error:", err);
+      }
+    };
+
+    ws.onerror = (e) => {
+      console.log("WS error:", e);
+    };
+
+    ws.onclose = () => {
+      console.log("WS closed");
+      setConnected(false);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [WS_URL, user?.user_id, sessionId]);
+
+  // Lời chào local để có sẵn 1 tin nhắn
   useEffect(() => {
     setMessages([
       {
@@ -25,52 +117,52 @@ export default function ChatScreen() {
         user: {
           _id: 2,
           name: "FPT Bot",
-          avatar: "https://cdn-icons-png.flaticon.com/512/4712/4712108.png",
+          avatar:
+            "https://cdn-icons-png.flaticon.com/512/4712/4712108.png",
         },
       },
     ]);
   }, []);
 
-  // Hàm gửi tin nhắn
-  const onSend = useCallback(async (newMessages: IMessage[] = []) => {
-    setMessages((prev) => GiftedChat.append(prev, newMessages));
-    const text = newMessages[0].text;
-    setInputText(''); // Clear input after sending
+  // Gửi 1 tin nhắn (từ input)
+  const onSend = useCallback(
+    (newMessages: IMessage[] = []) => {
+      if (!newMessages.length) return;
 
-    try {
-      setLoading(true);
-      const reply = await chatApi.sendMessage(user?.id || "guest", text);
-      const botMsg: IMessage = {
-        _id: Math.random().toString(),
-        text: reply,
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: "FPT Bot",
-          avatar: "https://cdn-icons-png.flaticon.com/512/4712/4712108.png",
-        },
-      };
-      setMessages((prev) => GiftedChat.append(prev, [botMsg]));
-    } catch (e: any) {
-      console.error('Chat error:', e);
-      const errorMsg = e.message || "Lỗi khi gửi tin. Vui lòng kiểm tra kết nối mạng và thử lại.";
-      setMessages((prev) =>
-        GiftedChat.append(prev, [
-          {
-            _id: Math.random().toString(),
-            text: errorMsg,
-            createdAt: new Date(),
-            user: { _id: 2, name: "FPT Bot", avatar: "https://cdn-icons-png.flaticon.com/512/4712/4712108.png" },
+      const text = newMessages[0].text;
+      setMessages((prev) => GiftedChat.append(prev, newMessages));
+      setInputText("");
+
+      const ws = wsRef.current;
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        console.log("WS not connected");
+        const errMsg: IMessage = {
+          _id: Math.random().toString(),
+          text: "Không kết nối được tới máy chủ. Vui lòng thử lại sau.",
+          createdAt: new Date(),
+          user: {
+            _id: 2,
+            name: "FPT Bot",
+            avatar:
+              "https://cdn-icons-png.flaticon.com/512/4712/4712108.png",
           },
-        ])
+        };
+        setMessages((prev) => GiftedChat.append(prev, [errMsg]));
+        return;
+      }
+
+      setLoading(true);
+      ws.send(
+        JSON.stringify({
+          message: text,
+        })
       );
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+    },
+    []
+  );
 
   const sendMessage = () => {
-    if (inputText.trim() === '') return;
+    if (!inputText.trim()) return;
 
     const message: IMessage = {
       _id: Math.random().toString(),
@@ -79,7 +171,8 @@ export default function ChatScreen() {
       user: {
         _id: 1,
         name: user?.email || "Khách",
-        avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
+        avatar:
+          "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
       },
     };
 
@@ -93,20 +186,20 @@ export default function ChatScreen() {
           {
             padding: 12,
             borderRadius: 20,
-            maxWidth: '75%',
+            maxWidth: "75%",
             marginVertical: 4,
           },
-          props.position === 'right'
+          props.position === "right"
             ? {
                 backgroundColor: colors.primary,
                 borderBottomRightRadius: 6,
-                alignSelf: 'flex-end',
+                alignSelf: "flex-end",
                 marginRight: 8,
               }
             : {
                 backgroundColor: colors.card,
                 borderBottomLeftRadius: 6,
-                alignSelf: 'flex-start',
+                alignSelf: "flex-start",
                 marginLeft: 8,
                 borderWidth: 1,
                 borderColor: colors.border,
@@ -117,7 +210,7 @@ export default function ChatScreen() {
           style={{
             fontSize: 16,
             lineHeight: 20,
-            color: props.position === 'right' ? '#FFFFFF' : colors.text,
+            color: props.position === "right" ? "#FFFFFF" : colors.text,
           }}
         >
           {props.currentMessage?.text}
@@ -126,25 +219,31 @@ export default function ChatScreen() {
           style={{
             fontSize: 11,
             marginTop: 4,
-            alignSelf: 'flex-end',
-            color: props.position === 'right' ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
+            alignSelf: "flex-end",
+            color:
+              props.position === "right"
+                ? "rgba(255, 255, 255, 0.7)"
+                : colors.textSecondary,
           }}
         >
           {props.currentMessage?.createdAt
-            ? new Date(props.currentMessage.createdAt).toLocaleTimeString('vi-VN', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })
-            : ''}
+            ? new Date(props.currentMessage.createdAt).toLocaleTimeString(
+                "vi-VN",
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              )
+            : ""}
         </Text>
       </View>
     );
   };
 
-  const renderInputToolbar = (props: any) => {
+  const renderInputToolbar = () => {
     return (
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{
           backgroundColor: colors.card,
           borderTopWidth: 1,
@@ -153,21 +252,23 @@ export default function ChatScreen() {
       >
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'flex-end',
+            flexDirection: "row",
+            alignItems: "flex-end",
             paddingHorizontal: 16,
             paddingVertical: 12,
             gap: 8,
           }}
         >
-          <TouchableOpacity style={{
-            padding: 8,
-            borderRadius: 20,
-            backgroundColor: colors.background,
-          }}>
+          <TouchableOpacity
+            style={{
+              padding: 8,
+              borderRadius: 20,
+              backgroundColor: colors.background,
+            }}
+          >
             <Paperclip size={20} color={colors.textSecondary} />
           </TouchableOpacity>
-          
+
           <TextInput
             style={{
               flex: 1,
@@ -188,27 +289,36 @@ export default function ChatScreen() {
             multiline
             maxLength={1000}
           />
-          
-          <TouchableOpacity style={{
-            padding: 8,
-            borderRadius: 20,
-            backgroundColor: colors.background,
-          }}>
+
+          <TouchableOpacity
+            style={{
+              padding: 8,
+              borderRadius: 20,
+              backgroundColor: colors.background,
+            }}
+          >
             <Smile size={20} color={colors.textSecondary} />
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={{
               padding: 12,
               borderRadius: 20,
-              backgroundColor: inputText.trim() ? colors.primary : colors.border,
-              justifyContent: 'center',
-              alignItems: 'center',
+              backgroundColor: inputText.trim()
+                ? colors.primary
+                : colors.border,
+              justifyContent: "center",
+              alignItems: "center",
             }}
             onPress={sendMessage}
             disabled={!inputText.trim()}
           >
-            <Send size={18} color={inputText.trim() ? '#FFFFFF' : colors.textSecondary} />
+            <Send
+              size={18}
+              color={
+                inputText.trim() ? "#FFFFFF" : colors.textSecondary
+              }
+            />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -221,11 +331,12 @@ export default function ChatScreen() {
 
       <GiftedChat
         messages={messages}
-        onSend={(msgs) => onSend(msgs)}
+        onSend={onSend}
         user={{
           _id: 1,
           name: user?.email || "Khách",
-          avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
+          avatar:
+            "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
         }}
         renderLoading={() => (
           <View style={{ alignItems: "center", marginVertical: 10 }}>
@@ -239,11 +350,17 @@ export default function ChatScreen() {
         renderBubble={renderBubble}
         renderInputToolbar={() => null}
       />
-      
-      {renderInputToolbar({})}
+
+      {renderInputToolbar()}
 
       {loading && (
-        <View style={{ position: "absolute", bottom: 70, alignSelf: "center" }}>
+        <View
+          style={{
+            position: "absolute",
+            bottom: 70,
+            alignSelf: "center",
+          }}
+        >
           <ActivityIndicator size="small" color={colors.primary} />
         </View>
       )}

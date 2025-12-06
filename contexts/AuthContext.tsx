@@ -1,144 +1,117 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '@/services/supabase';
+// src/contexts/AuthContext.tsx
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { loginApi, registerApi, RegisterPayload } from "../services/api";
+import { jwtDecode } from "jwt-decode";
 
-interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+type DecodedToken = {
+  sub?: string;
+  user_id?: number;
+  email?: string;
+  exp?: number;
+};
+
+type AuthUser = {
+  user_id: number;
+  email: string;
+};
+
+type AuthContextType = {
+  user: any | null;
+  token: string | null;
   loading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-}
+  register: (data: RegisterPayload) => Promise<void>;
+  logout: () => Promise<void>;
+};
 
-const AuthContext = createContext<AuthContextType>({
-  session: null,
-  user: null,
-  loading: true,
-  login: async () => {},
-  register: async () => {},
-  signOut: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (isSupabaseConfigured) {
-      // Use real Supabase authentication
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      });
-
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        (() => {
-          setSession(session);
-          setUser(session?.user ?? null);
-        })();
-      });
-
-      return () => subscription.unsubscribe();
-    } else {
-      // Use demo authentication
-      setLoading(false);
-      console.warn('Supabase not configured. Using demo authentication mode.');
-    }
-  }, []);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const login = async (email: string, password: string) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const data = await loginApi(email, password);  // BE trả { access_token, token_type }
+    const token = data.access_token;
+
+    // Decode JWT để lấy user_id, email...
+    const decoded = jwtDecode<DecodedToken>(token);
+    console.log("Decoded token:", decoded);
+
+    // BE thường dùng user_id hoặc sub làm ID
+    const userId =
+      decoded.user_id ?? (decoded.sub ? parseInt(decoded.sub, 10) : NaN);
+
+    if (!userId || Number.isNaN(userId)) {
+      throw new Error("Không tìm thấy user_id trong token");
+    }
+
+    setToken(token);
+    setUser({
+      user_id: userId,
+      email: decoded.email || email,
+      // full_name sẽ lấy từ /profile nên tạm bỏ hoặc để rỗng
+    });
+
+    await AsyncStorage.setItem("access_token", token);
+  } catch (e: any) {
+    console.log("login error", e?.response?.data || e.message);
+    setError(e?.response?.data?.detail || "Đăng nhập thất bại");
+    throw e;
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const register = async (payload: RegisterPayload) => {
     setLoading(true);
+    setError(null);
     try {
-      if (isSupabaseConfigured) {
-        // Use Supabase authentication
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (error) throw error;
-      } else {
-        // Use demo authentication
-        await new Promise((r) => setTimeout(r, 800));
-        
-        const demoAccounts = [
-          { email: 'admin@fpt.edu.vn', password: '123' },
-          { email: 'demo@fpt.edu.vn', password: 'demo123' },
-          { email: 'test@student.fpt.edu.vn', password: 'test123' },
-        ];
-        
-        const validAccount = demoAccounts.find(
-          acc => acc.email === email.trim() && acc.password === password
-        );
-        
-        if (!validAccount) {
-          throw new Error('Email hoặc mật khẩu không đúng');
-        }
-        
-        // Create mock user session
-        const mockUser = {
-          id: 'demo-user-' + Date.now(),
-          email: email.trim(),
-          app_metadata: {},
-          aud: 'authenticated',
-          user_metadata: { full_name: 'Demo User' },
-          created_at: new Date().toISOString(),
-        } as User;
-        
-        setUser(mockUser);
-        setSession({ user: mockUser } as Session);
-      }
-    } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
+      // 1) Gọi BE tạo user
+      await registerApi(payload);
+
+      // 2) Sau khi đăng ký xong, tự login luôn
+      await login(payload.email, payload.password);
+    } catch (e: any) {
+      console.log("register error", e?.response?.data || e.message);
+      setError(e?.response?.data?.detail || "Đăng ký thất bại");
+      throw e;
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      if (isSupabaseConfigured) {
-        // Use Supabase authentication
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-        });
-        if (error) throw error;
-        if (data.user && !data.session) {
-          throw new Error('Please check your email to confirm your account');
-        }
-      } else {
-        // Use demo registration
-        await new Promise((r) => setTimeout(r, 800));
-        
-        // Simulate successful registration
-        console.log('Demo registration successful for:', email);
-      }
-    } catch (error: any) {
-      throw new Error(error.message || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signOut = async () => {
-    if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
-    } else {
-      // Demo sign out
-      setUser(null);
-      setSession(null);
-    }
+  const logout = async () => {
+    await AsyncStorage.removeItem("access_token");
+    setToken(null);
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, login, register, signOut }}>
+    <AuthContext.Provider
+      value={{ user, token, loading, error, login, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
+  return ctx;
+};

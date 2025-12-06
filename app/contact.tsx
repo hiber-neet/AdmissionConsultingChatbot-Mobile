@@ -95,11 +95,6 @@ export default function ContactScreen() {
             action={() => handleWebsite('https://daihoc.fpt.edu.vn')}
           />
 
-          <ContactCard
-            icon={<MessageCircle size={24} color={colors.primary} />}
-            title="Chat trực tuyến"
-            content="Hỗ trợ 24/7"
-          />
         </View>
 
         <View style={styles.section}>
@@ -150,17 +145,6 @@ export default function ContactScreen() {
               <Text style={styles.socialButtonText}>Zalo</Text>
             </Pressable>
           </View>
-        </View>
-
-        <View style={styles.formSection}>
-          <Text style={styles.formTitle}>Đăng ký nhận tư vấn</Text>
-          <Text style={styles.formDescription}>
-            Để lại thông tin, chúng tôi sẽ liên hệ tư vấn chi tiết cho bạn
-          </Text>
-
-          <Pressable style={styles.formButton}>
-            <Text style={styles.formButtonText}>Điền form đăng ký</Text>
-          </Pressable>
         </View>
 
         <View style={styles.workingHours}>

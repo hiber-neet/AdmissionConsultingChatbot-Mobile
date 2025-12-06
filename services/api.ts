@@ -1,57 +1,244 @@
+// services/api.ts
+import axios from "axios";
+import { Platform } from "react-native";
+
+const API_BASE_URL = "http://localhost:8000";
+
+  export const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+
+// ----- ARTICLES -----
+export type ArticleApi = {
+  article_id: number;
+  title: string;
+  description: string | null;
+  url: string | null;
+  status: string;
+  create_at: string;
+  created_by: number;
+  major_id: number | null;
+  specialization_id: number | null;
+  author_name?: string | null;
+  major_name?: string | null;
+  specialization_name?: string | null;
+  note?: string | null;
+};
+
+export const getArticlesApi = async (
+  token?: string | null
+): Promise<ArticleApi[]> => {
+  const res = await api.get<ArticleApi[]>("/articles", {
+    headers: token
+      ? { Authorization: `Bearer ${token}` }
+      : undefined,
+  });
+  return res.data;
+};
+
+export const getArticleApi = async (
+  articleId: number,
+  token?: string | null
+): Promise<ArticleApi> => {
+  const res = await api.get<ArticleApi>(`/articles/${articleId}`, {
+    headers: token
+      ? { Authorization: `Bearer ${token}` }
+      : undefined,
+  });
+  return res.data;
+};
+
+
+// ----PROFILE ---
+export type UserProfile = {
+user_id: number;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  permission: string[];
+  role_name: string | null;
+  student_profile: {
+    interest: {
+      interest_id: number;
+      desired_major: string;
+      region: string;
+    } | null;
+  } | null;
+  consultant_profile: {
+    status: boolean;
+    is_leader: boolean;
+  } | null;
+  content_manager_profile: {
+    is_leader: boolean;
+  } | null;
+  admission_official_profile: {
+    rating: number;
+    current_sessions: number;
+    max_sessions: number;
+    status: string;
+  } | null;
+};
+
+// ---- API lấy profile ----
+export const getProfileApi = async (userId: number, token: string) => {
+  const res = await api.get<UserProfile>(`/profile/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+
+// ---------------- REGISTER ----------------
+export type RegisterPayload = {
+  fullName: string;
+  email: string;
+  phone: string;
+  interest_desired_major: string;
+  interest_region: string;
+  password: string;
+};
+
+export const registerApi = async (payload: RegisterPayload) => {
+  const body = {
+ 
+    full_name: payload.fullName,
+    email: payload.email,
+    password: payload.password,
+    phone_number: payload.phone,
+
+    status: true,
+    role_id: 0,
+    permissions: [],
+    consultant_is_leader: false,
+    content_manager_is_leader: false,
+    interest_desired_major: payload.interest_desired_major,
+    interest_region:"",
+  };
+  const res = await api.post("/auth/register", body);
+  return res.data;
+};
+
+// ---------------- LOGIN ----------------
+export const loginApi = async (email: string, password: string) => {
+  const res = await api.post("/auth/login", { email, password });
+  return res.data;
+};
+
+// Lưu session_id để giữ “phiên” chat giống web
+let chatSessionId: string | null = null;
+
 export const chatApi = {
-  async sendMessage(_userId: string, text: string): Promise<string> {
-    try {
-      // Giả lập delay
-      await new Promise((r) => setTimeout(r, Math.random() * 1000 + 500));
+  async sendMessage(userId: string, text: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      try {
+        const wsUrl =
+          API_BASE_URL.replace(/^http/, "ws") + "/chat/ws/chat";
 
-      const query = text.toLowerCase();
-      
-      // Phản hồi về học phí
-      if (query.includes("học phí") || query.includes("hoc phi") || query.includes("tuition")) {
-        return "Học phí tại Đại học FPT là:\n• Kỹ thuật phần mềm: 27 triệu/kỳ\n• Quản trị kinh doanh: 22 triệu/kỳ\n• Thiết kế đồ họa: 25 triệu/kỳ\n\nCó học bổng lên đến 100% cho thí sinh xuất sắc!";
-      }
-      
-      // Phản hồi về ngành học
-      if (query.includes("ngành") || query.includes("chương trình") || query.includes("program")) {
-        return "Các ngành đào tạo tại FPT University:\n• Kỹ thuật phần mềm\n• Quản trị kinh doanh\n• An toàn thông tin\n• Thiết kế đồ họa số\n• Digital Marketing\n• Thiết kế Game\n\nBạn muốn tìm hiểu chi tiết ngành nào?";
-      }
-      
-      // Phản hồi về xét tuyển
-      if (query.includes("xét tuyển") || query.includes("tuyển sinh") || query.includes("admission")) {
-        return "Phương thức xét tuyển FPT 2025:\n• Xét học bạ THPT (18.0/30 điểm)\n• Xét điểm thi THPT QG\n• Xét tuyển thẳng (có giải, chứng chỉ)\n\nThời gian: Từ tháng 1-8/2025";
-      }
-      
-      // Phản hồi về học bổng
-      if (query.includes("học bổng") || query.includes("hoc bong") || query.includes("scholarship")) {
-        return "Chương trình học bổng FPT:\n• 100% học phí: GPA ≥ 3.6\n• 75% học phí: GPA ≥ 3.2\n• 50% học phí: GPA ≥ 2.8\n• Học bổng tài năng\n• Học bổng khuyến khích";
-      }
-      
-      // Phản hồi về cơ sở
-      if (query.includes("cơ sở") || query.includes("co so") || query.includes("campus") || query.includes("địa chỉ")) {
-        return "Hệ thống cơ sở FPT University:\n• Hà Nội\n• TP.HCM\n• Đà Nẵng\n• Cần Thơ\n• Quy Nhon\n\nMỗi cơ sở đều có đầy đủ tiện ích học tập hiện đại!";
-      }
-      
-      // Phản hồi về việc làm
-      if (query.includes("việc làm") || query.includes("viec lam") || query.includes("job") || query.includes("career")) {
-        return "Cam kết việc làm FPT:\n• 95% sinh viên có việc làm sau tốt nghiệp\n• Mức lương khởi điểm: 8-15 triệu\n• Hơn 600 doanh nghiệp đối tác\n• Hỗ trợ tìm việc trọn đời";
-      }
-      
-      // Phản hồi chào hỏi
-      if (query.includes("xin chào") || query.includes("hello") || query.includes("hi") || query.includes("chào")) {
-        return "Xin chào! 👋 Tôi là trợ lý ảo tuyển sinh FPT University. Tôi có thể giúp bạn tìm hiểu về:\n• Chương trình đào tạo\n• Học phí & học bổng\n• Quy trình xét tuyển\n• Cơ hội việc làm\n\nBạn muốn hỏi gì ạ?";
-      }
-      
-      // Phản hồi cảm ơn
-      if (query.includes("cảm ơn") || query.includes("cam on") || query.includes("thank")) {
-        return "Rất vui được hỗ trợ bạn! 😊 Nếu bạn có thêm câu hỏi nào khác về FPT University, đừng ngại hỏi nhé. Chúc bạn may mắn với hành trình học tập!";
-      }
+        const ws = new WebSocket(wsUrl);
 
-      // Phản hồi mặc định
-      return `Cảm ơn bạn đã hỏi về "${text}". Hiện tại tôi chưa có thông tin chi tiết về vấn đề này. Bạn có thể:\n\n• Liên hệ hotline: 1900 636939\n• Email: tuyen.sinh@fpt.edu.vn\n• Hoặc hỏi tôi về học phí, ngành học, xét tuyển, học bổng nhé!`;
-      
-    } catch (error) {
-      console.error('Chat API Error:', error);
-      throw new Error('Không thể gửi tin nhắn. Vui lòng thử lại sau.');
-    }
+        let partial = "";
+        let done = false;
+
+        ws.onopen = () => {
+          // 1) Gửi thông tin user + session hiện tại (nếu có)
+          ws.send(
+            JSON.stringify({
+              user_id: userId || "guest",
+              session_id: chatSessionId,
+            })
+          );
+
+          // 2) Gửi câu hỏi
+          ws.send(
+            JSON.stringify({
+              message: text,
+              user_id: userId || "guest",
+              session_id: chatSessionId,
+            })
+          );
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            const ev = data.event || data.type;
+
+            switch (ev) {
+              case "session_created": {
+                if (data.session_id) {
+                  chatSessionId = data.session_id;
+                }
+                break;
+              }
+
+              case "chunk": {
+                const chunk =
+                  data.content ?? data.text ?? data.message ?? "";
+                partial += chunk;
+                break;
+              }
+
+              case "done": {
+                done = true;
+                ws.close();
+                const finalText =
+                  partial.trim() || "(không có phản hồi từ chatbot)";
+                resolve(finalText);
+                break;
+              }
+
+              case "error": {
+                done = true;
+                ws.close();
+                reject(
+                  new Error(
+                    data.message ||
+                      "Đã xảy ra lỗi khi xử lý câu hỏi."
+                  )
+                );
+                break;
+              }
+
+              default:
+              // có thể thêm log nếu cần
+            }
+          } catch (e) {
+            console.warn("Không parse được WS message:", event.data, e);
+          }
+        };
+
+        ws.onerror = (err) => {
+          console.error("WebSocket error:", err);
+          if (!done) {
+            done = true;
+            reject(
+              new Error(
+                "Không thể kết nối tới chatbot. Vui lòng thử lại sau."
+              )
+            );
+          }
+        };
+
+        ws.onclose = () => {
+          if (!done) {
+            reject(
+              new Error(
+                "Kết nối chatbot bị đóng trước khi nhận phản hồi."
+              )
+            );
+          }
+        };
+      } catch (error) {
+        console.error("Chat API Error:", error);
+        reject(
+          new Error("Không thể gửi tin nhắn. Vui lòng thử lại sau.")
+        );
+      }
+    });
   },
 };

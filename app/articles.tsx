@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,8 @@ import {
 } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
+import { getArticlesApi, ArticleApi } from '@/services/api';
 
 interface Article {
   id: number;
@@ -33,125 +35,89 @@ interface Article {
   tags: string[];
 }
 
-const allArticles: Article[] = [
-  {
-    id: 1,
-    title: 'Hướng dẫn đăng ký xét tuyển ĐH FPT 2025',
-    summary: 'Tìm hiểu chi tiết về quy trình đăng ký, hồ sơ cần thiết và lịch trình tuyển sinh năm 2025.',
-    content: 'Chi tiết về quy trình đăng ký xét tuyển...',
-    readTime: '5 phút đọc',
-    publishDate: '15 Nov 2025',
-    category: 'Hướng dẫn',
-    imageUrl: 'https://images.pexels.com/photos/5428836/pexels-photo-5428836.jpeg?auto=compress&cs=tinysrgb&w=400',
-    tags: ['Đăng ký', 'Xét tuyển', 'Hướng dẫn']
-  },
-  {
-    id: 2,
-    title: 'Điểm chuẩn và học phí các ngành tại ĐH FPT',
-    summary: 'Thông tin mới nhất về điểm chuẩn, học phí và chính sách hỗ trợ tài chính cho sinh viên.',
-    content: 'Thông tin chi tiết về điểm chuẩn...',
-    readTime: '7 phút đọc',
-    publishDate: '12 Nov 2025',
-    category: 'Thông tin',
-    imageUrl: 'https://images.pexels.com/photos/159775/library-la-trobe-study-students-159775.jpeg?auto=compress&cs=tinysrgb&w=400',
-    tags: ['Điểm chuẩn', 'Học phí', 'Tài chính']
-  },
-  {
-    id: 3,
-    title: 'Kinh nghiệm chuẩn bị hồ sơ xét tuyển',
-    summary: 'Chia sẻ từ những sinh viên đã trúng tuyển về cách chuẩn bị hồ sơ ấn tượng.',
-    content: 'Kinh nghiệm từ sinh viên...',
-    readTime: '6 phút đọc',
-    publishDate: '8 Nov 2025',
-    category: 'Kinh nghiệm',
-    imageUrl: 'https://images.pexels.com/photos/1925536/pexels-photo-1925536.jpeg?auto=compress&cs=tinysrgb&w=400',
-    tags: ['Hồ sơ', 'Kinh nghiệm', 'Tuyển sinh']
-  },
-  {
-    id: 4,
-    title: 'Các ngành học hot tại ĐH FPT năm 2025',
-    summary: 'Tổng quan về các ngành học được quan tâm nhiều nhất và cơ hội việc làm sau tốt nghiệp.',
-    content: 'Các ngành học hot...',
-    readTime: '8 phút đọc',
-    publishDate: '5 Nov 2025',
-    category: 'Ngành học',
-    imageUrl: 'https://images.pexels.com/photos/3184298/pexels-photo-3184298.jpeg?auto=compress&cs=tinysrgb&w=400',
-    tags: ['Ngành học', 'Việc làm', 'Xu hướng']
-  },
-  {
-    id: 5,
-    title: 'Học bổng và hỗ trợ tài chính cho sinh viên',
-    summary: 'Thông tin về các loại học bổng, điều kiện xét duyệt và cách thức đăng ký.',
-    content: 'Thông tin về học bổng...',
-    readTime: '6 phút đọc',
-    publishDate: '2 Nov 2025',
-    category: 'Học bổng',
-    imageUrl: 'https://images.pexels.com/photos/5088180/pexels-photo-5088180.jpeg?auto=compress&cs=tinysrgb&w=400',
-    tags: ['Học bổng', 'Hỗ trợ', 'Tài chính']
-  },
-  {
-    id: 6,
-    title: 'Cuộc sống sinh viên tại ĐH FPT',
-    summary: 'Khám phá môi trường học tập, hoạt động ngoại khóa và cơ sở vật chất tại trường.',
-    content: 'Cuộc sống sinh viên...',
-    readTime: '5 phút đọc',
-    publishDate: '30 Oct 2025',
-    category: 'Đời sống',
-    imageUrl: 'https://images.pexels.com/photos/1438081/pexels-photo-1438081.jpeg?auto=compress&cs=tinysrgb&w=400',
-    tags: ['Sinh viên', 'Đời sống', 'Hoạt động']
-  },
-  {
-    id: 7,
-    title: 'Cơ hội thực tập và việc làm sau tốt nghiệp',
-    summary: 'Tìm hiểu về chương trình thực tập và mạng lưới doanh nghiệp đối tác của ĐH FPT.',
-    content: 'Cơ hội thực tập...',
-    readTime: '9 phút đọc',
-    publishDate: '25 Oct 2025',
-    category: 'Nghề nghiệp',
-    imageUrl: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=400',
-    tags: ['Thực tập', 'Việc làm', 'Nghề nghiệp']
-  },
-  {
-    id: 8,
-    title: 'Lịch sử và thành tựu của ĐH FPT',
-    summary: 'Hành trình 20 năm phát triển và những thành tựu đáng tự hào của ĐH FPT.',
-    content: 'Lịch sử phát triển...',
-    readTime: '10 phút đọc',
-    publishDate: '20 Oct 2025',
-    category: 'Giới thiệu',
-    imageUrl: 'https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=400',
-    tags: ['Lịch sử', 'Thành tựu', 'ĐH FPT']
-  }
-];
+const defaultImage =
+  'https://images.pexels.com/photos/1595391/pexels-photo-1595391.jpeg?auto=compress&cs=tinysrgb&w=400';
 
-const categories = ['Tất cả', 'Hướng dẫn', 'Thông tin', 'Kinh nghiệm', 'Ngành học', 'Học bổng', 'Đời sống', 'Nghề nghiệp', 'Giới thiệu'];
+const STATIC_CATEGORIES = [
+  'Tất cả',
+  'Tuyển sinh',
+  'Ngành học',
+  'Học bổng',
+  'Đời sống',
+  'Nghề nghiệp',
+];
 
 export default function ArticlesScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { token } = useAuth();         
+
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
-  const [filteredArticles, setFilteredArticles] = useState(allArticles);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
-    let filtered = allArticles;
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const data = await getArticlesApi(token);
 
-    // Filter by category
+        const mapped: Article[] = data.map((a: ArticleApi) => {
+          const created = a.create_at ? new Date(a.create_at) : null;
+          return {
+            id: a.article_id,
+            title: a.title,
+            summary: a.description || '',
+ 
+            content: a.url || '',
+            readTime: '5 phút đọc', 
+            publishDate: created
+              ? created.toLocaleDateString('vi-VN')
+              : 'Không rõ',
+            category: a.major_name || 'Tuyển sinh',
+            imageUrl: defaultImage,  
+            tags: [
+              a.major_name || '',
+              a.specialization_name || '',
+            ].filter(Boolean) as string[],
+          };
+        });
+
+        setArticles(mapped);
+        setFilteredArticles(mapped);
+      } catch (err) {
+        console.error('Error fetching articles:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, [token]);
+
+  // 2) Lọc theo category + search
+  useEffect(() => {
+    let filtered = [...articles];
+
     if (selectedCategory !== 'Tất cả') {
-      filtered = filtered.filter(article => article.category === selectedCategory);
+      filtered = filtered.filter(
+        (article) => article.category === selectedCategory
+      );
     }
 
-    // Filter by search text
     if (searchText) {
-      filtered = filtered.filter(article =>
-        article.title.toLowerCase().includes(searchText.toLowerCase()) ||
-        article.summary.toLowerCase().includes(searchText.toLowerCase()) ||
-        article.tags.some(tag => tag.toLowerCase().includes(searchText.toLowerCase()))
+      const q = searchText.toLowerCase();
+      filtered = filtered.filter(
+        (article) =>
+          article.title.toLowerCase().includes(q) ||
+          article.summary.toLowerCase().includes(q) ||
+          article.tags.some((tag) => tag.toLowerCase().includes(q))
       );
     }
 
     setFilteredArticles(filtered);
-  }, [searchText, selectedCategory]);
+  }, [searchText, selectedCategory, articles]);
 
   const handleArticlePress = (articleId: number) => {
     router.push(`/article/${articleId}` as any);
@@ -173,10 +139,10 @@ export default function ArticlesScreen() {
             <Text style={styles.metaText}>{item.readTime}</Text>
           </View>
         </View>
-        
+
         <Text style={styles.articleTitle}>{item.title}</Text>
         <Text style={styles.articleSummary}>{item.summary}</Text>
-        
+
         <View style={styles.articleFooter}>
           <View style={styles.dateContainer}>
             <Calendar size={12} color="#666" />
@@ -187,7 +153,7 @@ export default function ArticlesScreen() {
             <ArrowRight size={14} color="#FF6600" />
           </View>
         </View>
-        
+
         <View style={styles.tagsContainer}>
           {item.tags.slice(0, 3).map((tag, index) => (
             <View key={index} style={styles.tag}>
@@ -207,19 +173,22 @@ export default function ArticlesScreen() {
       style={styles.categoriesContainer}
       contentContainerStyle={styles.categoriesContent}
     >
-      {categories.map((category, index) => (
+      {STATIC_CATEGORIES.map((category, index) => (
         <TouchableOpacity
           key={index}
           style={[
             styles.categoryButton,
-            selectedCategory === category && styles.selectedCategoryButton
+            selectedCategory === category && styles.selectedCategoryButton,
           ]}
           onPress={() => setSelectedCategory(category)}
         >
-          <Text style={[
-            styles.categoryButtonText,
-            selectedCategory === category && styles.selectedCategoryButtonText
-          ]}>
+          <Text
+            style={[
+              styles.categoryButtonText,
+              selectedCategory === category &&
+                styles.selectedCategoryButtonText,
+            ]}
+          >
             {category}
           </Text>
         </TouchableOpacity>
@@ -227,13 +196,31 @@ export default function ArticlesScreen() {
     </ScrollView>
   );
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Đang tải bài viết...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Bài viết Tuyển sinh" showLogo={false} />
-      
-      {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-        <View style={[styles.searchInputContainer, { backgroundColor: colors.card }]}>
+
+      {/* Search */}
+      <View
+        style={[
+          styles.searchContainer,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
+        <View
+          style={[
+            styles.searchInputContainer,
+            { backgroundColor: colors.card },
+          ]}
+        >
           <Search size={20} color={colors.textSecondary} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
@@ -245,10 +232,8 @@ export default function ArticlesScreen() {
         </View>
       </View>
 
-      {/* Category Filter */}
       {renderCategoryFilter()}
 
-      {/* Results Info */}
       <View style={styles.resultsInfo}>
         <Text style={styles.resultsText}>
           Tìm thấy {filteredArticles.length} bài viết
@@ -259,7 +244,6 @@ export default function ArticlesScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Articles List - Takes most space */}
       <FlatList
         data={filteredArticles}
         keyExtractor={(item) => item.id.toString()}
@@ -267,11 +251,11 @@ export default function ArticlesScreen() {
         style={styles.articlesList}
         contentContainerStyle={styles.articlesContent}
         showsVerticalScrollIndicator={false}
-        numColumns={1}
       />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

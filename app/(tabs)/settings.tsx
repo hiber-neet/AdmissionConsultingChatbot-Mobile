@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, Pressable, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Switch, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { Bell, Moon, Globe, HelpCircle, Shield, Info, AlertCircle, LogOut } from 'lucide-react-native';
@@ -44,7 +44,7 @@ function SettingItem({ icon, title, description, type, value, onPress, onToggle,
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
-  const { signOut } = useAuth();
+  const { logout } = useAuth();
   const [notifications, setNotifications] = useState(true);
 
   useEffect(() => {
@@ -93,26 +93,43 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Đăng xuất',
-      'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?',
-      [
-        { text: 'Hủy', style: 'cancel' },
-        { 
-          text: 'Đăng xuất', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-              Alert.alert('Thông báo', 'Đăng xuất thành công!');
-            } catch (error) {
-              Alert.alert('Lỗi', 'Có lỗi xảy ra khi đăng xuất');
-            }
+  if (Platform.OS === 'web') {
+    const ok = window.confirm('Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?');
+    if (!ok) return;
+
+    (async () => {
+      try {
+        await logout();
+        window.alert('Đăng xuất thành công!');
+      } catch (error) {
+        console.error('Sign out error:', error);
+        window.alert('Có lỗi xảy ra khi đăng xuất');
+      }
+    })();
+
+    return;
+  }
+
+  Alert.alert(
+    'Đăng xuất',
+    'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?',
+    [
+      { text: 'Hủy', style: 'cancel' },
+      { 
+        text: 'Đăng xuất', 
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await logout();
+            Alert.alert('Thông báo', 'Đăng xuất thành công!');
+          } catch (error) {
+            Alert.alert('Lỗi', 'Có lỗi xảy ra khi đăng xuất');
           }
         }
-      ]
-    );
-  };
+      }
+    ]
+  );
+};
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

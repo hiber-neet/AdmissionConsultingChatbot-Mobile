@@ -1,24 +1,31 @@
-import 'react-native-url-polyfill/auto';
-import { createClient } from '@supabase/supabase-js';
+import "react-native-url-polyfill/auto";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-// Check if Supabase environment variables are configured
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+// Lấy env từ Expo
+const envUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const envAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-// Use demo credentials if environment variables are not set
-const defaultUrl = 'https://demo.supabase.co';
-const defaultKey = 'demo-key';
+// Chỉ chấp nhận URL bắt đầu bằng http:// hoặc https://
+const hasValidUrl =
+  typeof envUrl === "string" && /^https?:\/\//.test(envUrl.trim());
+const hasKey = typeof envAnonKey === "string" && envAnonKey.trim().length > 0;
 
-export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+// Expo chỉ coi là "đã cấu hình Supabase" khi URL + KEY đều hợp lệ
+export const isSupabaseConfigured: boolean = hasValidUrl && hasKey;
 
-export const supabase = createClient(
-  supabaseUrl || defaultUrl, 
-  supabaseAnonKey || defaultKey, 
-  {
+// Nếu không cấu hình hợp lệ thì KHÔNG tạo client, để app chạy ở chế độ demo
+let supabaseClient: SupabaseClient | null = null;
+
+if (isSupabaseConfigured) {
+  supabaseClient = createClient(envUrl!.trim(), envAnonKey!.trim(), {
     auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false,
+      persistSession: false,
     },
-  }
-);
+  });
+} else {
+  console.warn(
+    "[Supabase] Chưa cấu hình hoặc URL/KEY không hợp lệ. App sẽ chạy ở chế độ DEMO (không dùng Supabase)."
+  );
+}
+
+export const supabase = supabaseClient;

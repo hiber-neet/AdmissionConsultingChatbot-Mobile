@@ -3,7 +3,9 @@ import { Award, Users, Globe, TrendingUp, FileText, Clock, ArrowRight } from 'lu
 import { Link, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import Header from '@/components/layout/Header';
+ 
 export default function HomeScreen() {
+  
   const router = useRouter();
   const { colors } = useTheme();
 

@@ -101,18 +101,18 @@ const menuItems: MenuItem[] = [
     icon: Phone,
     description: 'Thông tin liên hệ',
   },
-  {
-    title: 'Đăng ký',
-    route: '/register',
-    icon: UserPlus,
-    description: 'Tạo tài khoản',
-  },
-  {
-    title: 'Đăng nhập',
-    route: '/login',
-    icon: LogIn,
-    description: 'Đăng nhập hệ thống',
-  },
+  // {
+  //   title: 'Đăng ký',
+  //   route: '/register',
+  //   icon: UserPlus,
+  //   description: 'Tạo tài khoản',
+  // },
+  // {
+  //   title: 'Đăng nhập',
+  //   route: '/login',
+  //   icon: LogIn,
+  //   description: 'Đăng nhập hệ thống',
+  // },
 ];
 
 export default function Sidebar({ isVisible, onClose }: SidebarProps) {
