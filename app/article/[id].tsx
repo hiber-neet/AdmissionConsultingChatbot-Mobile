@@ -35,7 +35,7 @@ interface Article {
   views: number;
 }
 
-// Sample full articles data (in real app, this would come from API)
+ 
 const articlesData: Article[] = [
   {
     id: 1,
@@ -122,7 +122,7 @@ const articlesData: Article[] = [
 
 ## 7. Lưu ý quan trọng
 
-⚠️ **Những điều cần nhớ:**
+ **Những điều cần nhớ:**
 - Kiểm tra kỹ thông tin trước khi nộp hồ sơ
 - Nộp hồ sơ sớm để có nhiều cơ hội được xét tuyển
 - Chuẩn bị đầy đủ hồ sơ theo yêu cầu

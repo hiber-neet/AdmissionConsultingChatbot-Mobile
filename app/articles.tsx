@@ -96,7 +96,7 @@ export default function ArticlesScreen() {
     fetchArticles();
   }, [token]);
 
-  // 2) Lọc theo category + search
+ 
   useEffect(() => {
     let filtered = [...articles];
 

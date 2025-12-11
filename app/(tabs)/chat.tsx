@@ -37,75 +37,73 @@ export default function ChatScreen() {
 
   // Kết nối WebSocket
   useEffect(() => {
-    const ws = new WebSocket(WS_URL);
-    wsRef.current = ws;
+  const ws = new WebSocket(WS_URL);
+  wsRef.current = ws;
 
-    ws.onopen = () => {
-      console.log("WS connected");
-      setConnected(true);
+  ws.onopen = () => {
+    console.log("WS connected");
+    setConnected(true);
 
- 
-     const userId = user?.user_id;  
-ws.send(JSON.stringify({
-  user_id: userId,
-  session_id: sessionId,
-}));
-    };
+    const userId = user?.user_id ?? null;
+    ws.send(JSON.stringify({
+      user_id: userId,
+      session_id: null,        // để BE tự tạo lần đầu
+    }));
+  };
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
 
-        if (data.event === "session_created") {
-          setSessionId(data.session_id);
-          console.log("Session created:", data.session_id);
-          return;
-        }
-
-        if (data.event === "chunk") {
-          // ghép text lại, chỉ show khi done
-          botBufferRef.current += data.content;
-          return;
-        }
-
-        if (data.event === "done") {
-          const fullText = botBufferRef.current.trim();
-          if (fullText) {
-            const botMsg: IMessage = {
-              _id: Math.random().toString(),
-              text: fullText,
-              createdAt: new Date(),
-              user: {
-                _id: 2,
-                name: "FPT Bot",
-                avatar:
-                  "https://cdn-icons-png.flaticon.com/512/4712/4712108.png",
-              },
-            };
-            setMessages((prev) => GiftedChat.append(prev, [botMsg]));
-          }
-          botBufferRef.current = "";
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.log("WS message parse error:", err);
+      if (data.event === "session_created") {
+        setSessionId(data.session_id);      // chỉ set state, KHÔNG reconnect nữa
+        console.log("Session created:", data.session_id);
+        return;
       }
-    };
 
-    ws.onerror = (e) => {
-      console.log("WS error:", e);
-    };
+      if (data.event === "chunk") {
+        botBufferRef.current += data.content;
+        return;
+      }
 
-    ws.onclose = () => {
-      console.log("WS closed");
-      setConnected(false);
-    };
+      if (data.event === "done") {
+        const fullText = botBufferRef.current.trim();
+        if (fullText) {
+          const botMsg: IMessage = {
+            _id: Math.random().toString(),
+            text: fullText,
+            createdAt: new Date(),
+            user: {
+              _id: 2,
+              name: "FPT Bot",
+              avatar:
+                "https://cdn-icons-png.flaticon.com/512/4712/4712108.png",
+            },
+          };
+          setMessages((prev) => GiftedChat.append(prev, [botMsg]));
+        }
+        botBufferRef.current = "";
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.log("WS message parse error:", err);
+    }
+  };
 
-    return () => {
-      ws.close();
-    };
-  }, [WS_URL, user?.user_id, sessionId]);
+  ws.onerror = (e) => {
+    console.log("WS error:", e);
+  };
+
+  ws.onclose = () => {
+    console.log("WS closed");
+    setConnected(false);
+  };
+
+  return () => {
+    ws.close();
+  };
+}, [WS_URL, user?.user_id]); 
 
   // Lời chào local để có sẵn 1 tin nhắn
   useEffect(() => {

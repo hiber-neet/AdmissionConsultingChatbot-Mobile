@@ -178,7 +178,6 @@ useEffect(() => {
     }
 
     if (data.event === 'message') {
-      // 🔥 bỏ qua echo từ chính mình
       if (data.sender_id === user?.user_id) {
         return;
       }
@@ -271,14 +270,12 @@ useEffect(() => {
     return;
   }
 
-  // 💻 Web: Alert không hiển thị -> mở thẳng modal rating
   if (Platform.OS === 'web') {
     console.log('endChat clicked - open rating modal on web');
     setShowRatingModal(true);
     return;
   }
 
-  // 📱 Mobile: dùng Alert.confirm như bình thường
   Alert.alert(
     'Kết thúc chat',
     'Bạn muốn kết thúc và đánh giá phiên tư vấn này?',
@@ -333,13 +330,6 @@ useEffect(() => {
     Alert.alert('Lỗi', 'Không thể kết thúc phiên tư vấn. Vui lòng thử lại.');
   }
 };
-
-
-
-
-
-
-
 
   // Auto scroll
   useEffect(() => {
