@@ -26,6 +26,9 @@ import {
   X,
   MessageSquare,
   FileText,
+  ClipboardList,
+  Brain,
+  
 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -76,6 +79,23 @@ const menuItems: MenuItem[] = [
     description: 'Thông tin cá nhân',
     requireAuth: true,
   },
+
+{
+  title: "RIASEC",
+  route: "/riasec",
+  icon: Brain,
+  description: "Trắc nghiệm định hướng nghề nghiệp",
+  // requireAuth: false, // để guest vẫn vào làm bài được
+},
+
+  {
+  title: "Học bạ",
+  route: "/hocba",
+  icon: ClipboardList,
+  description: "Quản lý học bạ",
+  requireAuth: true,
+},
+
   {
     title: 'Cài đặt',
     route: '/settings',

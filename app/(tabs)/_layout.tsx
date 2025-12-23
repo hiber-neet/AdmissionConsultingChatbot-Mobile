@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Settings, User, Bot, MessageCircle } from 'lucide-react-native';
+import { Home, Settings, User, Bot, MessageCircle, BookOpen } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
 export default function TabLayout() {
@@ -39,6 +39,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      
+
+            {/* <Tabs.Screen
+        name="hocba"
+        options={{
+          title: 'Học bạ',
+          tabBarIcon: ({ size, color }) => <BookOpen size={size} color={color} />,
+        }}
+      /> */}
 
       <Tabs.Screen
         name="chat"

@@ -1,15 +1,16 @@
 // services/api.ts
 import axios from "axios";
 import { Platform } from "react-native";
+import { API_BASE_URL } from "./config";
 
-const API_BASE_URL = "http://localhost:8000";
-
-  export const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+
 
 
 // ----- ARTICLES -----
