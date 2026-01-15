@@ -15,6 +15,9 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import Header from "@/components/layout/Header";
 import { Send, Paperclip, Smile } from "lucide-react-native";
+import { WS_BASE_URL } from "../../services/config";
+
+
 
 export default function ChatScreen() {
   const { user } = useAuth();
@@ -37,12 +40,8 @@ const prefillSentRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
   const botBufferRef = useRef<string>("");
 
-  const WS_BASE = Platform.select({
-    web: "ws://localhost:8000",
-    ios: "ws://localhost:8000",
-    android: "ws://10.0.2.2:8000",
-  });
-  const WS_URL = `${WS_BASE}/chat/ws/chat`;
+ 
+const WS_URL = `${WS_BASE_URL}/chat/ws/chat`;
 
   // helper flush buffer thành 1 tin nhắn bot
   const flushBotBuffer = () => {

@@ -70,16 +70,6 @@ export default function RegisterScreen() {
         interest_region:"", 
         password,
     });
-      Alert.alert(
-        "Đăng ký thành công!",
-        "Tài khoản của bạn đã được tạo thành công.",
-        [
-          {
-            text: "Đăng nhập ngay",
-            onPress: () => router.replace("/login")
-          }
-        ]
-      );
     } catch (e: any) {
       setError(e.message || "Đăng ký thất bại");
     }

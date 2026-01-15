@@ -69,7 +69,7 @@ export default function SettingsScreen() {
   };
 
   const openWebsite = () => {
-    Linking.openURL('https://daihoc.fpt.edu.vn');
+    Linking.openURL('http://34.158.58.188/');
   };
 
   const openSupport = () => {
@@ -136,7 +136,7 @@ export default function SettingsScreen() {
       <Header title="Cài đặt" showLogo={false} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
-        {!isSupabaseConfigured && (
+        {/* {!isSupabaseConfigured && (
           <View style={[styles.demoWarning, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <AlertCircle size={20} color={colors.warning} />
             <View style={styles.demoWarningText}>
@@ -146,9 +146,9 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
-        )}
+        )} */}
         
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Thông báo</Text>
           <SettingItem
             icon={<Bell size={24} color={colors.primary} />}
@@ -159,7 +159,7 @@ export default function SettingsScreen() {
             onToggle={handleNotificationToggle}
             colors={colors}
           />
-        </View>
+        </View> */}
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Giao diện</Text>

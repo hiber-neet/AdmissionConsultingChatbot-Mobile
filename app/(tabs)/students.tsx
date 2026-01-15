@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import EventSource, { EventSourceListener } from "react-native-sse";
+import "react-native-url-polyfill/auto";
 import {
   View,
   Text,
@@ -15,6 +17,8 @@ import Header from "@/components/layout/Header";
 import { Send, CheckCheck, Star } from "lucide-react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { API_BASE_URL, WS_BASE_URL } from "../../services/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type QueueStatus = "idle" | "in_queue" | "chatting" | "ended" | "timeout" | "rejected";
 
@@ -30,7 +34,7 @@ interface Message {
   senderAvatar?: string;
 }
 
-// Shape message giống liveMessages ở UserProfile.jsx (web)
+// Shape message giống liveMessages  
 type LiveMsg = {
   interaction_id?: number | string;
   sender_id: number;
@@ -42,22 +46,13 @@ export default function StudentsScreen() {
   const { user } = useAuth();
   const { colors } = useTheme();
 
-  const API_BASE = Platform.select({
-    web: "http://localhost:8000",
-    ios: "http://localhost:8000",
-    android: "http://10.0.2.2:8000",
-  })!;
-
-  const WS_BASE = Platform.select({
-    web: "ws://localhost:8000",
-    ios: "ws://localhost:8000",
-    android: "ws://10.0.2.2:8000",
-  })!;
+const API_BASE = API_BASE_URL;      
+const WS_BASE  = WS_BASE_URL;
 
   const flatListRef = useRef<FlatList>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const sseRef = useRef<EventSource | null>(null);
+const sseRef = useRef<any>(null);
 
   const queueTimeoutRef = useRef<any>(null);
 
@@ -74,7 +69,7 @@ export default function StudentsScreen() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState<number | null>(null);
 
-  // timeout modal (giống UserProfile)
+  // timeout modal  
   const [showQueueTimeoutModal, setShowQueueTimeoutModal] = useState(false);
 
   const meId = useMemo(() => Number(user?.user_id || 0), [user?.user_id]);
@@ -159,36 +154,80 @@ export default function StudentsScreen() {
   // =========================
   // SSE: lắng nghe accepted / rejected / chat_ended
   // =========================
-  useEffect(() => {
-    if (!meId) return;
+useEffect(() => {
+  if (!meId) return;
 
-    // giống UserProfile: chỉ mở SSE khi đang chờ hoặc đang chat
-    if (queueStatus !== "in_queue" && queueStatus !== "chatting") {
-      return;
+  // nếu không ở trạng thái cần SSE thì đóng luôn
+  if (queueStatus !== "in_queue" && queueStatus !== "chatting") {
+    if (sseRef.current) {
+      try {
+        sseRef.current.removeAllEventListeners?.();
+        sseRef.current.close?.();
+      } catch {}
+      sseRef.current = null;
     }
+    return;
+  }
+
+  let cancelled = false;
+
+  (async () => {
+    // lấy access_token nếu SSE endpoint cần auth
+    const token = await AsyncStorage.getItem("access_token");
 
     const sseUrl = `${API_BASE}/live_chat/livechat/sse/customer/${meId}`;
-    const es = new EventSource(sseUrl);
+
+    // đóng SSE cũ
+    if (sseRef.current) {
+      try {
+        sseRef.current.removeAllEventListeners?.();
+        sseRef.current.close?.();
+      } catch {}
+      sseRef.current = null;
+    }
+
+    const es = new EventSource(sseUrl, {
+      headers: token
+        ? {
+            Authorization: {
+              toString: () => `Bearer ${token}`,
+            },
+          }
+        : undefined,
+    });
+
     sseRef.current = es;
 
-    const safeJson = (raw: string) => {
-      if (!raw) return null;
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return null;
-      }
-    };
+const safeJson = (raw?: string | null) => {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
 
-    es.onmessage = (event: MessageEvent) => {
+    const onMessage: EventSourceListener = (event) => {
+      if (cancelled) return;
+
+      if (event.type === "open") {
+        console.log("[SSE] open");
+        return;
+      }
+
+      if (event.type === "error" || event.type === "exception") {
+        console.log("[SSE] error", event);
+        return;
+      }
+
+      if (event.type !== "message") return;
+
       const payload = safeJson(event.data);
       if (!payload) return;
 
-      // BE đang wrap: {"event": "...", "data": {...}}
       const ev = payload.event || payload?.data?.event;
       const data = payload.data || payload;
 
-      // bỏ ping/connected
       if (!ev || ev === "ping" || ev === "connected") return;
 
       console.log("[SSE]", ev, data);
@@ -200,13 +239,12 @@ export default function StudentsScreen() {
       }
 
       if (ev === "accepted") {
-        const sid = Number(data.session_id || payload?.data?.session_id || 0);
+        const sid = Number(data.session_id || 0);
         if (!sid) return;
 
         setSessionId(sid);
         setQueueStatus("chatting");
         setShowQueueTimeoutModal(false);
-
         Alert.alert("Thông báo", "Bạn đã được kết nối với chuyên viên tuyển sinh.");
         return;
       }
@@ -219,7 +257,6 @@ export default function StudentsScreen() {
       }
 
       if (ev === "chat_ended") {
-        // giống UserProfile: kết thúc -> mở rating modal
         closeWS();
         setQueueStatus("ended");
         setSessionId(null);
@@ -231,14 +268,24 @@ export default function StudentsScreen() {
       }
     };
 
-    es.onerror = (e) => {
-      console.log("[SSE] error", e);
-    };
+    // lắng nghe các event cơ bản
+    es.addEventListener("open", onMessage);
+    es.addEventListener("message", onMessage);
+    es.addEventListener("error", onMessage);
+ es.addEventListener("exception" as any, onMessage as any);
+  })();
 
-    return () => {
-      es.close();
-    };
-  }, [API_BASE, meId, queueStatus]);
+  return () => {
+    cancelled = true;
+    if (sseRef.current) {
+      try {
+        sseRef.current.removeAllEventListeners?.();
+        sseRef.current.close?.();
+      } catch {}
+      sseRef.current = null;
+    }
+  };
+}, [API_BASE, meId, queueStatus]);
 
   // =========================
   // AUTO TIMEOUT 3 PHÚT (giống UserProfile)
@@ -300,6 +347,7 @@ export default function StudentsScreen() {
     };
 
     ws.onmessage = (event) => {
+      if (event.type === "message" && !event.data) return;
       let data: any;
       try {
         data = JSON.parse(event.data);
@@ -412,7 +460,6 @@ export default function StudentsScreen() {
       return;
     }
 
-    // Push UI ngay (giống web)
     const localMsg: Message = {
       id: String(Date.now()),
       text,
@@ -426,12 +473,11 @@ export default function StudentsScreen() {
     setMessages((prev) => [...prev, localMsg]);
     setNewMessage("");
 
-    // ✅ BE yêu cầu đúng keys: sender_id + message
     ws.send(JSON.stringify({ sender_id: meId, message: text }));
   };
 
   // =========================
-  // END LIVE CHAT (đúng API BE)
+  // END LIVE CHAT
   // =========================
   const endChat = async () => {
     if (!sessionId || !meId) {
@@ -458,7 +504,7 @@ export default function StudentsScreen() {
     }
   };
 
-  // rating submit (hiện BE chưa có API rating -> giống web: chỉ đóng modal)
+  // rating submit 
   const submitRating = () => {
     if (!rating) {
       Alert.alert("Thông báo", "Vui lòng chọn số sao đánh giá.");
@@ -648,7 +694,7 @@ export default function StudentsScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* Timeout modal giống UserProfile */}
+      {/* Timeout modal */}
       {showQueueTimeoutModal && (
         <View style={styles.ratingOverlay}>
           <View style={[styles.ratingContainer, { backgroundColor: colors.card }]}>
