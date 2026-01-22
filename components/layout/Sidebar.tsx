@@ -55,10 +55,10 @@ const menuItems: MenuItem[] = [
     description: 'Trang chủ chính',
   },
   {
-    title: 'Bài viết Tuyển sinh',
+    title: 'Bài viết',
     route: '/articles',
     icon: FileText,
-    description: 'Xem tất cả bài viết về tuyển sinh',
+    description: 'Xem tất cả bài viết',
   },
   {
     title: 'Chat AI',

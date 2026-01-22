@@ -545,12 +545,12 @@ const safeJson = (raw?: string | null) => {
           isStudent ? styles.studentMessage : styles.officerMessage,
         ]}
       >
-        {!isStudent && (
+        {/* {!isStudent && (
           <Image
             source={{ uri: item.senderAvatar || "https://i.pravatar.cc/150?img=1" }}
             style={styles.avatar}
           />
-        )}
+        )} */}
 
         <View
           style={[
@@ -649,7 +649,11 @@ const safeJson = (raw?: string | null) => {
       <Header title="Tư vấn trực tiếp" showLogo={false} />
 
       {renderStatusBar()}
-
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+  >
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -660,10 +664,7 @@ const safeJson = (raw?: string | null) => {
         showsVerticalScrollIndicator={false}
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={[styles.inputContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}
-      >
+ 
         <View style={styles.inputWrapper}>
           <TextInput
             style={[

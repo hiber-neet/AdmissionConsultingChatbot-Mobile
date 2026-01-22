@@ -131,7 +131,7 @@ export default function ContactScreen() {
           />
         </View>
 
-        <View style={styles.socialSection}>
+        {/* <View style={styles.socialSection}>
           <Text style={styles.sectionTitle}>Kết nối với chúng tôi</Text>
 
           <View style={styles.socialButtons}>
@@ -145,7 +145,7 @@ export default function ContactScreen() {
               <Text style={styles.socialButtonText}>Zalo</Text>
             </Pressable>
           </View>
-        </View>
+        </View> */}
 
         <View style={styles.workingHours}>
           <Text style={styles.workingTitle}>Giờ làm việc</Text>

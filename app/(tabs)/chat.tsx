@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import Markdown from "react-native-markdown-display";
 import {
   View,
   Text,
@@ -10,7 +11,7 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
-import { GiftedChat, IMessage } from "react-native-gifted-chat";
+import {  Avatar, GiftedChat, IMessage } from "react-native-gifted-chat";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import Header from "@/components/layout/Header";
@@ -34,7 +35,15 @@ const prefillSentRef = useRef(false);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [connected, setConnected] = useState(false);
 
-  // ✅ NEW giống ChatGuestPage: đánh dấu đã welcome
+  const renderAvatar = (props: any) => {
+  return (
+    <View style={{ marginBottom: 10}}>
+      <Avatar {...props} />
+    </View>
+  );
+};
+
+  // NEW giống ChatGuestPage: đánh dấu đã welcome
   const [hasWelcomed, setHasWelcomed] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -267,77 +276,177 @@ useEffect(() => {
     onSend([message]);
   };
 
+  // const renderBubble = (props: any) => {
+  //   return (
+  //     <View
+  //       style={[
+  //         {
+  //           padding: 12,
+  //           borderRadius: 20,
+  //           maxWidth: "75%",
+  //           marginVertical: 10,
+  //         },
+  //         props.position === "right"
+  //           ? {
+  //               backgroundColor: colors.primary,
+  //               borderBottomRightRadius: 6,
+  //               alignSelf: "flex-end",
+  //               marginRight: 8,
+  //             }
+  //           : {
+  //               backgroundColor: colors.card,
+  //               borderBottomLeftRadius: 6,
+  //               alignSelf: "flex-start",
+  //               marginLeft: 8,
+  //               borderWidth: 1,
+  //               borderColor: colors.border,
+  //             },
+  //       ]}
+  //     >
+  //       <Text
+  //         style={{
+  //           fontSize: 16,
+  //           lineHeight: 20,
+  //           color: props.position === "right" ? "#FFFFFF" : colors.text,
+  //         }}
+  //       >
+  //         {props.currentMessage?.text}
+  //       </Text>
+  //       <Text
+  //         style={{
+  //           fontSize: 11,
+  //           marginTop: 4,
+  //           alignSelf: "flex-end",
+  //           color:
+  //             props.position === "right"
+  //               ? "rgba(255, 255, 255, 0.7)"
+  //               : colors.textSecondary,
+  //         }}
+  //       >
+  //         {props.currentMessage?.createdAt
+  //           ? new Date(props.currentMessage.createdAt).toLocaleTimeString(
+  //               "vi-VN",
+  //               {
+  //                 hour: "2-digit",
+  //                 minute: "2-digit",
+  //               }
+  //             )
+  //           : ""}
+  //       </Text>
+  //     </View>
+  //   );
+  // };
+
   const renderBubble = (props: any) => {
-    return (
-      <View
-        style={[
-          {
-            padding: 12,
-            borderRadius: 20,
-            maxWidth: "75%",
-            marginVertical: 10,
-          },
-          props.position === "right"
-            ? {
-                backgroundColor: colors.primary,
-                borderBottomRightRadius: 6,
-                alignSelf: "flex-end",
-                marginRight: 8,
-              }
-            : {
-                backgroundColor: colors.card,
-                borderBottomLeftRadius: 6,
-                alignSelf: "flex-start",
-                marginLeft: 8,
-                borderWidth: 1,
-                borderColor: colors.border,
-              },
-        ]}
-      >
+  const isUser = props.position === "right";
+  const text = props.currentMessage?.text || "";
+
+  return (
+    <View
+      style={[
+        {
+          padding: 12,
+          borderRadius: 20,
+          maxWidth: "75%",
+          marginVertical: 10,
+        },
+        isUser
+          ? {
+              backgroundColor: colors.primary,
+              borderBottomRightRadius: 6,
+              alignSelf: "flex-end",
+              marginRight: 8,
+            }
+          : {
+              backgroundColor: colors.card,
+              borderBottomLeftRadius: 6,
+              alignSelf: "flex-start",
+              marginLeft: 8,
+              borderWidth: 1,
+              borderColor: colors.border,
+            },
+      ]}
+    >
+      {isUser ? (
+        // ✅ USER: text thường
         <Text
           style={{
             fontSize: 16,
-            lineHeight: 20,
-            color: props.position === "right" ? "#FFFFFF" : colors.text,
+            lineHeight: 22,
+            color: "#FFFFFF",
           }}
         >
-          {props.currentMessage?.text}
+          {text}
         </Text>
-        <Text
+      ) : (
+        // ✅ BOT: render MARKDOWN
+        <Markdown
           style={{
-            fontSize: 11,
-            marginTop: 4,
-            alignSelf: "flex-end",
-            color:
-              props.position === "right"
-                ? "rgba(255, 255, 255, 0.7)"
-                : colors.textSecondary,
+            body: {
+              color: colors.text,
+              fontSize: 16,
+              lineHeight: 22,
+            },
+            strong: {
+              fontWeight: "700",
+            },
+            heading2: {
+              fontSize: 18,
+              fontWeight: "700",
+              marginVertical: 6,
+            },
+            list_item: {
+              flexDirection: "row",
+            },
+            bullet_list: {
+              marginVertical: 4,
+            },
           }}
         >
-          {props.currentMessage?.createdAt
-            ? new Date(props.currentMessage.createdAt).toLocaleTimeString(
-                "vi-VN",
-                {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }
-              )
-            : ""}
-        </Text>
-      </View>
-    );
-  };
+          {text}
+        </Markdown>
+      )}
+
+      {/* Time */}
+      <Text
+        style={{
+          fontSize: 11,
+          marginTop: 6,
+          alignSelf: "flex-end",
+          color: isUser
+            ? "rgba(255,255,255,0.7)"
+            : colors.textSecondary,
+        }}
+      >
+        {props.currentMessage?.createdAt
+          ? new Date(props.currentMessage.createdAt).toLocaleTimeString(
+              "vi-VN",
+              { hour: "2-digit", minute: "2-digit" }
+            )
+          : ""}
+      </Text>
+    </View>
+  );
+};
 
   const renderInputToolbar = () => {
     return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{
-          backgroundColor: colors.card,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-        }}
-      >
+      // <KeyboardAvoidingView
+      //   behavior={Platform.OS === "ios" ? "padding" : "height"}
+      //   style={{
+      //     backgroundColor: colors.card,
+      //     borderTopWidth: 1,
+      //     borderTopColor: colors.border,
+      //   }}
+      // >
+
+          <View
+      style={{
+        backgroundColor: colors.card,
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
+      }}
+    >
         <View
           style={{
             flexDirection: "row",
@@ -347,7 +456,7 @@ useEffect(() => {
             gap: 8,
           }}
         >
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={{
               padding: 8,
               borderRadius: 20,
@@ -355,7 +464,7 @@ useEffect(() => {
             }}
           >
             <Paperclip size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TextInput
             style={{
@@ -378,7 +487,7 @@ useEffect(() => {
             maxLength={1000}
           />
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={{
               padding: 8,
               borderRadius: 20,
@@ -386,7 +495,7 @@ useEffect(() => {
             }}
           >
             <Smile size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity
             style={{
@@ -408,22 +517,29 @@ useEffect(() => {
               }
             />
           </TouchableOpacity>
+              </View>
         </View>
-      </KeyboardAvoidingView>
+        
+      // </KeyboardAvoidingView>
     );
   };
 
   return (
+<KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+>
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Header title="Chatbot tuyển sinh 🎓" showLogo={false} />
-
+ 
       <GiftedChat
         messages={messages}
         onSend={onSend}
         user={{
           _id: 1,
           name: user?.email || "Khách",
-          avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
+ 
         }}
         renderLoading={() => (
           <View style={{ alignItems: "center", marginVertical: 10 }}>
@@ -431,11 +547,13 @@ useEffect(() => {
           </View>
         )}
         renderBubble={renderBubble}
-        showUserAvatar
+  showAvatarForEveryMessage={false}
+  renderAvatar={() => null}
         messagesContainerStyle={{ backgroundColor: colors.background }}
         renderInputToolbar={() => null}
+        bottomOffset={Platform.OS === "android" ? 60 : 80}
       />
-
+ 
       {renderInputToolbar()}
 
       {loading && (
@@ -450,5 +568,6 @@ useEffect(() => {
         </View>
       )}
     </View>
+    </KeyboardAvoidingView>
   );
 }

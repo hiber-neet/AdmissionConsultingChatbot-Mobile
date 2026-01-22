@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   View,
   Text,
@@ -171,7 +172,7 @@ export default function RiasecScreen() {
   }, [answers]);
 
   const scores = serverScores ?? localScores;
-
+  const insets = useSafeAreaInsets();
   const ranking = useMemo(() => {
     return (Object.keys(scores) as Trait[])
       .map((t) => ({ trait: t, score: scores[t] }))
@@ -293,7 +294,12 @@ export default function RiasecScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="RIASEC" showLogo={false} />
 
-      <ScrollView contentContainerStyle={styles.content}>
+<ScrollView
+  contentContainerStyle={[
+    styles.content,
+    { paddingBottom: insets.bottom + 20 },
+  ]}
+>
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.h1, { color: colors.text }]}>Trắc nghiệm RIASEC</Text>
           <Text style={[styles.p, { color: colors.textSecondary }]}>

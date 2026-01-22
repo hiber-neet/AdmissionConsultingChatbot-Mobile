@@ -28,6 +28,7 @@ export type ArticleApi = {
   major_name?: string | null;
   specialization_name?: string | null;
   note?: string | null;
+  link_image?: string | null;
 };
 
 export const getArticlesApi = async (
@@ -52,7 +53,6 @@ export const getArticleApi = async (
   });
   return res.data;
 };
-
 
 // ----PROFILE ---
 export type UserProfile = {

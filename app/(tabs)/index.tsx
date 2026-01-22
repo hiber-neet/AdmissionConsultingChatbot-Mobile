@@ -3,7 +3,9 @@ import { Award, Users, Globe, TrendingUp, FileText, Clock, ArrowRight } from 'lu
 import { Link, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import Header from '@/components/layout/Header';
- 
+import { useEffect, useState } from "react";
+import { useAuth } from '@/contexts/AuthContext';
+import { getArticlesApi, ArticleApi } from '@/services/api';
 export default function HomeScreen() {
   
   const router = useRouter();
@@ -13,32 +15,85 @@ export default function HomeScreen() {
     router.push(`/article/${articleId}` as any);
   };
 
-  const admissionArticles = [
-    {
-      id: 1,
-      title: 'Hướng dẫn đăng ký xét tuyển ĐH FPT 2025',
-      summary: 'Tìm hiểu chi tiết về quy trình đăng ký, hồ sơ cần thiết và lịch trình tuyển sinh năm 2025.',
-      readTime: '5 phút đọc',
-      publishDate: '15 Nov 2025',
-      imageUrl: 'https://images.pexels.com/photos/5428836/pexels-photo-5428836.jpeg?auto=compress&cs=tinysrgb&w=400'
-    },
-    {
-      id: 2,
-      title: 'Điểm chuẩn và học phí các ngành tại ĐH FPT',
-      summary: 'Thông tin mới nhất về điểm chuẩn, học phí và chính sách hỗ trợ tài chính cho sinh viên.',
-      readTime: '7 phút đọc',
-      publishDate: '12 Nov 2025',
-      imageUrl: 'https://images.pexels.com/photos/159775/library-la-trobe-study-students-159775.jpeg?auto=compress&cs=tinysrgb&w=400'
-    },
-    {
-      id: 3,
-      title: 'Kinh nghiệm chuẩn bị hồ sơ xét tuyển',
-      summary: 'Chia sẻ từ những sinh viên đã trúng tuyển về cách chuẩn bị hồ sơ ấn tượng.',
-      readTime: '6 phút đọc',
-      publishDate: '8 Nov 2025',
-      imageUrl: 'https://images.pexels.com/photos/1925536/pexels-photo-1925536.jpeg?auto=compress&cs=tinysrgb&w=400'
+interface Article {
+  id: number;
+  title: string;
+  summary: string;
+  readTime: string;
+  publishDate: string;
+  imageUrl: string;
+}
+
+const defaultImage = 'https://images.pexels.com/photos/1595391/pexels-photo-1595391.jpeg?auto=compress&cs=tinysrgb&w=400';
+
+const { token } = useAuth();
+
+const [articles, setArticles] = useState<Article[]>([]);
+const [loadingArticles, setLoadingArticles] = useState(true);
+
+  // const admissionArticles = [
+  //   {
+  //     id: 1,
+  //     title: 'Hướng dẫn đăng ký xét tuyển ĐH FPT 2025',
+  //     summary: 'Tìm hiểu chi tiết về quy trình đăng ký, hồ sơ cần thiết và lịch trình tuyển sinh năm 2025.',
+  //     readTime: '5 phút đọc',
+  //     publishDate: '15 Nov 2025',
+  //     imageUrl: 'https://images.pexels.com/photos/5428836/pexels-photo-5428836.jpeg?auto=compress&cs=tinysrgb&w=400'
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Điểm chuẩn và học phí các ngành tại ĐH FPT',
+  //     summary: 'Thông tin mới nhất về điểm chuẩn, học phí và chính sách hỗ trợ tài chính cho sinh viên.',
+  //     readTime: '7 phút đọc',
+  //     publishDate: '12 Nov 2025',
+  //     imageUrl: 'https://images.pexels.com/photos/159775/library-la-trobe-study-students-159775.jpeg?auto=compress&cs=tinysrgb&w=400'
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'Kinh nghiệm chuẩn bị hồ sơ xét tuyển',
+  //     summary: 'Chia sẻ từ những sinh viên đã trúng tuyển về cách chuẩn bị hồ sơ ấn tượng.',
+  //     readTime: '6 phút đọc',
+  //     publishDate: '8 Nov 2025',
+  //     imageUrl: 'https://images.pexels.com/photos/1925536/pexels-photo-1925536.jpeg?auto=compress&cs=tinysrgb&w=400'
+  //   }
+  // ];
+
+
+  useEffect(() => {
+  const fetchArticles = async () => {
+    try {
+      const data = await getArticlesApi(token);
+
+      const mapped: Article[] = data.map((a: ArticleApi) => {
+        const created = a.create_at ? new Date(a.create_at) : null;
+
+        return {
+          id: a.article_id,
+          title: a.title,
+          summary: a.description || '',
+          readTime: '5 phút đọc',
+          publishDate: created
+            ? created.toLocaleDateString('vi-VN')
+            : 'Không rõ',
+          imageUrl:
+            a.link_image && a.link_image.trim() !== ''
+              ? a.link_image
+              : defaultImage,
+        };
+      });
+
+      // 👉 HOME chỉ lấy 3 bài mới nhất
+      setArticles(mapped.slice(0, 3));
+    } catch (err) {
+      console.error('Fetch home articles error:', err);
+    } finally {
+      setLoadingArticles(false);
     }
-  ];
+  };
+
+  fetchArticles();
+}, [token]);
+
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -124,35 +179,47 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📚 Bài viết về Tuyển sinh</Text>
+          <Text style={styles.sectionTitle}>📚 Bài viết</Text>
           <Text style={styles.sectionDescription}>
-            Cập nhật thông tin mới nhất về quy trình tuyển sinh và kinh nghiệm ứng tuyển
+            Cập nhật thông tin mới nhất về tin tức
           </Text>
           
-          {admissionArticles.map((article) => (
-            <Pressable 
-              key={article.id} 
-              style={styles.articleCard}
-              onPress={() => handleArticlePress(article.id)}
-            >
-              <Image source={{ uri: article.imageUrl }} style={styles.articleImage} />
-              <View style={styles.articleContent}>
-                <Text style={styles.articleTitle}>{article.title}</Text>
-                <Text style={styles.articleSummary}>{article.summary}</Text>
-                <View style={styles.articleMeta}>
-                  <View style={styles.articleMetaItem}>
-                    <Clock size={14} color="#666" />
-                    <Text style={styles.articleMetaText}>{article.readTime}</Text>
-                  </View>
-                  <Text style={styles.articleDate}>{article.publishDate}</Text>
-                </View>
-                <View style={styles.readMoreContainer}>
-                  <Text style={styles.readMoreText}>Đọc thêm</Text>
-                  <ArrowRight size={16} color="#FF6600" />
-                </View>
-              </View>
-            </Pressable>
-          ))}
+{loadingArticles ? (
+  <Text>Đang tải bài viết...</Text>
+) : (
+  articles.map((article) => (
+    <Pressable
+      key={article.id}
+      style={styles.articleCard}
+      onPress={() => handleArticlePress(article.id)}
+    >
+      <Image source={{ uri: article.imageUrl }} style={styles.articleImage} />
+
+      <View style={styles.articleContent}>
+        <Text style={styles.articleTitle}>{article.title}</Text>
+
+
+        <View style={styles.articleMeta}>
+          <View style={styles.articleMetaItem}>
+            <Clock size={14} color="#666" />
+            <Text style={styles.articleMetaText}>
+              {article.readTime}
+            </Text>
+          </View>
+
+          <Text style={styles.articleDate}>
+            {article.publishDate}
+          </Text>
+        </View>
+
+        <View style={styles.readMoreContainer}>
+          <Text style={styles.readMoreText}>Đọc thêm</Text>
+          <ArrowRight size={16} color="#FF6600" />
+        </View>
+      </View>
+    </Pressable>
+  ))
+)}
           
           <Link href="/articles" asChild>
             <Pressable style={styles.viewAllArticlesButton}>
@@ -162,7 +229,7 @@ export default function HomeScreen() {
           </Link>
         </View>
 
-        <View style={styles.ctaSection}>
+        <View style={[styles.ctaSection, { marginTop: -10 }]}>
           <Text style={styles.ctaTitle}>Sẵn sàng gia nhập ĐH FPT?</Text>
           <Link href="/admissions" asChild>
             <Pressable style={styles.ctaButton}>
@@ -170,7 +237,7 @@ export default function HomeScreen() {
             </Pressable>
           </Link>
         </View>
-         <Link href="/login" asChild>
+         {/* <Link href="/login" asChild>
         <Pressable
           style={{
             backgroundColor: "#FF6A00",
@@ -182,7 +249,7 @@ export default function HomeScreen() {
         >
           <Text style={{ color: "#fff", fontWeight: "600" }}>Đi tới trang Login</Text>
         </Pressable>
-      </Link>
+      </Link> */}
       </View>
       
     </ScrollView>

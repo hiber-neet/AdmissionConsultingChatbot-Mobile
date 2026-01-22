@@ -165,7 +165,7 @@ export default function AdmissionsScreen() {
           </View>
         </View>
 
-        <View style={styles.ctaSection}>
+        {/* <View style={styles.ctaSection}>
           <Text style={styles.ctaTitle}>Bắt đầu hành trình của bạn</Text>
           <Pressable style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>Đăng ký xét tuyển</Text>
@@ -173,7 +173,7 @@ export default function AdmissionsScreen() {
           <Pressable style={styles.secondaryButton}>
             <Text style={styles.secondaryButtonText}>Tải hướng dẫn chi tiết</Text>
           </Pressable>
-        </View>
+        </View> */}
       </View>
     </ScrollView>
   );

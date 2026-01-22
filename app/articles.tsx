@@ -76,7 +76,8 @@ export default function ArticlesScreen() {
               ? created.toLocaleDateString('vi-VN')
               : 'Không rõ',
             category: a.major_name || 'Tuyển sinh',
-            imageUrl: defaultImage,  
+            imageUrl: a.link_image && a.link_image.trim() !== ''
+            ? a.link_image : defaultImage,  
             tags: [
               a.major_name || '',
               a.specialization_name || '',

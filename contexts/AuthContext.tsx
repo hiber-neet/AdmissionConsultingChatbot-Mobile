@@ -39,18 +39,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const login = async (email: string, password: string) => {
+const login = async (email: string, password: string) => {
   setLoading(true);
   setError(null);
+
   try {
-    const data = await loginApi(email, password);  // BE trả { access_token, token_type }
+    const data = await loginApi(email, password); // BE trả { access_token }
     const token = data.access_token;
 
-    // Decode JWT để lấy user_id, email...
     const decoded = jwtDecode<DecodedToken>(token);
-    console.log("Decoded token:", decoded);
 
-    // BE thường dùng user_id hoặc sub làm ID
     const userId =
       decoded.user_id ?? (decoded.sub ? parseInt(decoded.sub, 10) : NaN);
 
@@ -62,36 +60,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser({
       user_id: userId,
       email: decoded.email || email,
-      // full_name sẽ lấy từ /profile nên tạm bỏ hoặc để rỗng
     });
 
     await AsyncStorage.setItem("access_token", token);
   } catch (e: any) {
     console.log("login error", e?.response?.data || e.message);
-    setError(e?.response?.data?.detail || "Đăng nhập thất bại");
-    throw e;
+
+    // ✅ CHUẨN HOÁ LỖI TẠI ĐÂY
+    let message = "Đăng nhập thất bại";
+
+    if (e?.response) {
+      const status = e.response.status;
+
+      if (status === 401) {
+        message = "Bạn đã nhập sai email hoặc mật khẩu";
+      } else if (status === 403) {
+        message = "Tài khoản của bạn đã bị khóa";
+      } else if (status === 500) {
+        message = "Lỗi máy chủ, vui lòng thử lại sau";
+      } else {
+        message = e.response.data?.detail || message;
+      }
+    } else if (e?.message) {
+      message = "Không thể kết nối tới máy chủ";
+    }
+
+    setError(message);
+
+    // ⚠️ QUAN TRỌNG: throw Error mới, KHÔNG throw e
+    throw new Error(message);
   } finally {
     setLoading(false);
   }
 };
 
-  const register = async (payload: RegisterPayload) => {
-    setLoading(true);
-    setError(null);
-    try {
-      // 1) Gọi BE tạo user
-      await registerApi(payload);
+const register = async (payload: RegisterPayload) => {
+  setLoading(true);
+  setError(null);
 
-      // 2) Sau khi đăng ký xong, tự login luôn
-      await login(payload.email, payload.password);
-    } catch (e: any) {
-      console.log("register error", e?.response?.data || e.message);
-      setError(e?.response?.data?.detail || "Đăng ký thất bại");
-      throw e;
-    } finally {
-      setLoading(false);
+  try {
+    // 1) Gọi BE tạo user
+    await registerApi(payload);
+
+    // 2) Sau khi đăng ký xong, tự login luôn
+    await login(payload.email, payload.password);
+  } catch (e: any) {
+    console.log("register error", e?.response?.data || e.message);
+
+    let message = "Đăng ký thất bại";
+
+    if (e?.response) {
+      const status = e.response.status;
+
+      if (status === 400) {
+        // ✅ TRƯỜNG HỢP EMAIL ĐÃ TỒN TẠI
+        message = "Email đã có tài khoản";
+      } else if (status === 409) {
+        message = "Email đã có tài khoản";
+      } else if (status === 500) {
+        message = "Lỗi máy chủ, vui lòng thử lại sau";
+      } else {
+        message = e.response.data?.detail || message;
+      }
+    } else if (e?.message) {
+      message = "Không thể kết nối tới máy chủ";
     }
-  };
+
+    setError(message);
+
+    // ⚠️ throw Error mới
+    throw new Error(message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const logout = async () => {
     await AsyncStorage.removeItem("access_token");

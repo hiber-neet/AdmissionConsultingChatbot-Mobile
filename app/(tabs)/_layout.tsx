@@ -1,10 +1,15 @@
 import { Tabs } from 'expo-router';
 import { Home, Settings, User, Bot, MessageCircle, BookOpen } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { Redirect } from 'expo-router';
 
 export default function TabLayout() {
   const { colors } = useTheme();
-  
+   const { user, loading } = useAuth(); // AuthContext nên có loading/initialized
+
+  if (loading) return null;            // hoặc splash/loader
+  if (!user) return <Redirect href="/login" />;
   return (
     <Tabs
       screenOptions={{
