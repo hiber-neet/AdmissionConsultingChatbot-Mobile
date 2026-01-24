@@ -58,7 +58,7 @@ const sseRef = useRef<any>(null);
 
   const [queueStatus, setQueueStatus] = useState<QueueStatus>("idle");
   const [queueId, setQueueId] = useState<number | null>(null);
-
+  const [endedSessionId, setEndedSessionId] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
 
   // messages UI (RN)
@@ -259,6 +259,7 @@ const safeJson = (raw?: string | null) => {
       if (ev === "chat_ended") {
         closeWS();
         setQueueStatus("ended");
+        setEndedSessionId(sessionId); 
         setSessionId(null);
         setMessages([]);
         setShowRatingModal(true);
@@ -505,15 +506,39 @@ const safeJson = (raw?: string | null) => {
   };
 
   // rating submit 
-  const submitRating = () => {
-    if (!rating) {
-      Alert.alert("Thông báo", "Vui lòng chọn số sao đánh giá.");
-      return;
+const submitRating = async () => {
+  if (!rating) {
+    Alert.alert("Thông báo", "Vui lòng chọn số sao đánh giá.");
+    return;
+  }
+
+  if (!endedSessionId) {
+    Alert.alert("Lỗi", "Không xác định được phiên chat để đánh giá.");
+    return;
+  }
+
+  try {
+    const url =
+      `${API_BASE}/live_chat/livechat/session/rate` +
+      `?session_id=${endedSessionId}&rating=${rating}`;
+
+    const res = await fetch(url, { method: "POST" });
+    const data = await res.json();
+
+    if (!res.ok || data?.error) {
+      throw new Error(data?.error || "Rate failed");
     }
+
     setShowRatingModal(false);
     setRating(null);
+    setEndedSessionId(null);
+
     Alert.alert("Cảm ơn bạn", "Đánh giá của bạn đã được ghi nhận.");
-  };
+  } catch (e) {
+    console.log("submitRating error", e);
+    Alert.alert("Lỗi", "Không thể gửi đánh giá. Vui lòng thử lại.");
+  }
+};
 
   // cleanup when unmount
   useEffect(() => {

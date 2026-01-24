@@ -68,7 +68,7 @@ const menuItems: MenuItem[] = [
   },
   {
     title: 'Chat trực tiếp',
-    route: '/live-chat',
+    route: '/students',
     icon: MessageSquare,
     description: 'Chat với cán bộ',
   },

@@ -82,7 +82,7 @@ const [loadingArticles, setLoadingArticles] = useState(true);
         };
       });
 
-      // 👉 HOME chỉ lấy 3 bài mới nhất
+      // HOME chỉ lấy 3 bài mới nhất
       setArticles(mapped.slice(0, 3));
     } catch (err) {
       console.error('Fetch home articles error:', err);

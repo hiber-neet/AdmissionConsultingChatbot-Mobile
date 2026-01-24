@@ -233,16 +233,16 @@ export default function ArticlesScreen() {
         </View>
       </View>
 
-      {renderCategoryFilter()}
+      {/* {renderCategoryFilter()} */}
 
       <View style={styles.resultsInfo}>
         <Text style={styles.resultsText}>
           Tìm thấy {filteredArticles.length} bài viết
         </Text>
-        <TouchableOpacity style={styles.filterButton}>
+        {/* <TouchableOpacity style={styles.filterButton}>
           <Filter size={16} color="#FF6600" />
           <Text style={styles.filterButtonText}>Bộ lọc</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <FlatList
